@@ -120,3 +120,189 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes egg-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes mochi-tail-wag {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes mochi-body-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes mochi-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes mochi-sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+.egg {
+  transform-origin: 50% 65%;
+  will-change: transform;
+}
+.egg-near {
+  animation: egg-wobble 1.2s ease-in-out infinite;
+}
+.egg-shell {
+  fill: #fff7ef;
+  stroke: #f0dcc6;
+  stroke-width: 3;
+}
+.egg-spot {
+  fill: #ffd9c7;
+}
+.egg-highlight {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+.egg-shadow {
+  fill: rgba(0, 0, 0, 0.08);
+}
+
+.mochi {
+  transition: transform 0.2s ease-out;
+}
+.mochi-happy {
+  transform: scale(1.03);
+}
+.mochi-dead {
+  opacity: 0.85;
+}
+.mochi-shadow {
+  fill: rgba(0, 0, 0, 0.08);
+}
+.mochi-body-shape,
+.mochi-ear {
+  fill: #ffe3c9;
+  stroke: #f4c9a6;
+  stroke-width: 3;
+}
+.mochi-paw {
+  fill: #ffd6b8;
+}
+.mochi-tail-shape {
+  fill: #ffd6b8;
+  stroke: #f4c9a6;
+  stroke-width: 2;
+}
+.mochi-eye {
+  fill: #5b4636;
+}
+.mochi-eye-shine {
+  fill: #ffffff;
+}
+.mochi-eye-happy {
+  fill: none;
+  stroke: #5b4636;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.mochi-eye-x {
+  fill: none;
+  stroke: #9a8578;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.mochi-cheek {
+  fill: #ff9fb2;
+  opacity: 0.7;
+}
+.mochi-mouth {
+  fill: none;
+  stroke: #a56a4a;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.mochi-mouth-open {
+  fill: #c56a5a;
+  stroke: #a56a4a;
+  stroke-width: 3;
+}
+.mochi-heart {
+  fill: #ff8fa3;
+}
+.mochi-tail {
+  transform-origin: 172px 156px;
+}
+.mochi-body {
+  transform-origin: 50% 72%;
+}
+.mochi-happy .mochi-tail {
+  animation: mochi-tail-wag 0.5s ease-in-out infinite;
+}
+.mochi-happy .mochi-body {
+  animation: mochi-body-bounce 0.8s ease-in-out infinite;
+}
+.mochi-scratch .mochi-body {
+  animation: mochi-wiggle 0.35s ease-in-out infinite;
+}
+.mochi-scratch .mochi-tail {
+  animation: mochi-tail-wag 0.3s ease-in-out infinite;
+}
+.mochi-sparkle {
+  animation: mochi-sparkle-pop 0.9s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .egg-near,
+  .mochi-happy .mochi-tail,
+  .mochi-happy .mochi-body,
+  .mochi-scratch .mochi-body,
+  .mochi-scratch .mochi-tail,
+  .mochi-sparkle {
+    animation: none;
+  }
+  .mochi,
+  .mochi-happy {
+    transform: none;
+  }
+}
