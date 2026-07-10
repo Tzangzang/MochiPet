@@ -127,3 +127,64 @@ select not exists (
       'food_catalog', 'food_categories'
     )
 ) as no_out_of_scope_tables;
+
+
+-- =========================================================================
+-- CONCURRENCY HARDENING CHECKS (bổ sung ở Phase 4 Bước 1.1)
+-- =========================================================================
+
+-- 13. Trigger caregiver là BEFORE và áp dụng cho cả INSERT lẫn UPDATE.
+--     tgtype bit: 2 = BEFORE, 4 = INSERT, 16 = UPDATE.
+select
+  bool_or((t.tgtype & 2) <> 0) as caregiver_trigger_is_before,
+  bool_or((t.tgtype & 2) = 0) as caregiver_trigger_has_after_row,
+  bool_or((t.tgtype & 4) <> 0) as caregiver_trigger_on_insert,
+  bool_or((t.tgtype & 16) <> 0) as caregiver_trigger_on_update
+from pg_trigger t
+join pg_class c on c.oid = t.tgrelid
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname = 'pet_caregivers'
+  and t.tgname = 'trg_enforce_max_two_caregivers'
+  and not t.tgisinternal;
+
+-- 14. Function giới hạn caregiver tồn tại.
+select exists (
+  select 1 from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.proname = 'enforce_max_two_caregivers'
+) as caregiver_limit_function_exists;
+
+-- 15. Source function có row lock FOR UPDATE trên public.pets (best-effort qua catalog).
+select
+  pg_get_functiondef(p.oid) ilike '%for update%'
+  and pg_get_functiondef(p.oid) ilike '%public.pets%'
+  as caregiver_function_has_pets_row_lock
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'enforce_max_two_caregivers';
+
+-- 16. Partial unique index single active owner vẫn tồn tại (không đổi).
+select exists (
+  select 1 from pg_indexes
+  where schemaname = 'public' and indexname = 'pet_caregivers_one_active_owner'
+) as owner_partial_unique_index_still_exists;
+
+-- 17. Chưa có RPC feed/hatch/perform và không có function scheduled/cron trong public.
+select not exists (
+  select 1 from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.proname ~ '(feed|hatch|perform|scheduled|cron)'
+) as no_feed_hatch_or_scheduled_functions;
+
+-- 18. Liệt kê function trong public (kỳ vọng CHỈ: set_updated_at, handle_new_user,
+--     enforce_max_two_caregivers, is_active_pet_caregiver).
+select array_agg(p.proname order by p.proname) as public_functions
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public';
+
+-- LƯU Ý (static review): việc "không có scheduled job/cron" được xác nhận bằng
+-- static review — migration này không tạo bất kỳ cron.schedule/pg_cron job nào.
+-- Không kiểm tra cron.job bằng SQL vì pg_cron có thể đã được bật sẵn ở project
+-- (sự tồn tại của cron.job không đồng nghĩa migration này tạo job).

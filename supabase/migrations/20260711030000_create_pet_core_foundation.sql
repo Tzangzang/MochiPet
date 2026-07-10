@@ -197,7 +197,12 @@ create trigger set_pet_caregivers_updated_at
   for each row execute function public.set_updated_at();
 
 -- =========================================================================
--- 7. Trigger giới hạn tối đa 2 active caregivers / pet
+-- 7. Trigger giới hạn tối đa 2 active caregivers / pet (an toàn concurrency)
+--
+-- Vì sao BEFORE + row lock: SELECT ... FOR UPDATE trên public.pets khóa dòng
+-- pet tương ứng, TUẦN TỰ HÓA mọi thay đổi caregiver theo từng pet. Transaction
+-- đồng thời thứ hai phải CHỜ transaction thứ nhất commit rồi mới đếm lại ->
+-- ngăn race condition vượt quá 2 active caregiver. Không cần advisory lock.
 -- =========================================================================
 create or replace function public.enforce_max_two_caregivers()
 returns trigger
@@ -207,25 +212,51 @@ set search_path = ''
 as $$
 declare
   v_active_count integer;
+  v_locked boolean;
 begin
+  -- Chỉ kiểm tra khi row (mới hoặc sau cập nhật) ở trạng thái active.
+  if new.status <> 'active' then
+    return new;
+  end if;
+
+  -- 1. Khóa dòng pet để tuần tự hóa thay đổi caregiver của pet này.
+  select true
+    into v_locked
+  from public.pets
+  where id = new.pet_id
+  for update;
+
+  -- 2. Pet không tồn tại: raise rõ ràng (FK cũng sẽ chặn, nhưng báo sớm).
+  if not found then
+    raise exception 'Pet % khong ton tai', new.pet_id
+      using errcode = 'foreign_key_violation';
+  end if;
+
+  -- 3-4. Đếm active caregiver hiện có, LOẠI TRỪ chính row đang thao tác
+  --      (theo cặp pet_id + user_id) để UPDATE không tự đếm mình.
   select count(*)
     into v_active_count
   from public.pet_caregivers
   where pet_id = new.pet_id
-    and status = 'active';
+    and status = 'active'
+    and not (pet_id = new.pet_id and user_id = new.user_id);
 
-  if v_active_count > 2 then
+  -- 5. Đã có >= 2 active khác -> thêm row active này là quá giới hạn.
+  if v_active_count >= 2 then
     raise exception
       'Pet % da co toi da 2 nguoi cham soc dang hoat dong', new.pet_id
       using errcode = 'check_violation';
   end if;
 
+  -- 6.
   return new;
 end;
 $$;
 
+-- Đổi trigger AFTER cũ -> BEFORE INSERT OR UPDATE.
+drop trigger if exists trg_enforce_max_two_caregivers on public.pet_caregivers;
 create trigger trg_enforce_max_two_caregivers
-  after insert or update on public.pet_caregivers
+  before insert or update on public.pet_caregivers
   for each row execute function public.enforce_max_two_caregivers();
 
 -- =========================================================================
@@ -334,10 +365,12 @@ comment on table public.pet_feeding_logs is
 
 comment on column public.eggs.hatches_at is
   'Mốc thời gian SERVER mà trứng sẽ nở (chống gian lận đổi giờ thiết bị).';
+comment on column public.pets.status is
+  'Trạng thái vòng đời ĐÃ MATERIALIZE: active hoặc dead. Life-state hiển thị (normal/hungry/very_hungry/weak/critical/dead) được TÍNH ĐỘNG từ database server time và last_fed_at; cột status (và died_at) chỉ được materialize qua transaction/RPC hoặc scheduled job, KHÔNG tự đổi chỉ vì thời gian trôi qua.';
 comment on column public.pets.last_fed_at is
-  'Lần cuối pet được cho ăn (server time). Nguồn duy nhất để tính trạng thái đói: <24h normal, 24-48h hungry, 48-72h very_hungry, 72-96h weak, 96-120h critical, >=120h dead.';
+  'Lần cuối pet được cho ăn (DATABASE server time) — nguồn thời gian DUY NHẤT để tính life-state: <24h normal, 24-48h hungry, 48-72h very_hungry, 72-96h weak, 96-120h critical, >=120h dead. Khi vượt 120h pet được COI LÀ dead về mặt nghiệp vụ. Feed RPC (bước sau) phải: khóa row pet, dùng now() của database, nếu đã quá 120h thì đánh dấu dead và KHÔNG cho feed hồi sinh, và tăng state_version khi state thay đổi.';
 comment on column public.pets.died_at is
-  'Thời điểm pet chết (chỉ có khi status = dead).';
+  'Thời điểm pet chết, CHỈ có khi status = dead. Được materialize qua transaction/RPC/scheduled job — không tự sinh chỉ vì đã quá 120h (life-state vẫn tính động cho tới khi được materialize).';
 comment on column public.pets.state_version is
   'Bộ đếm optimistic-locking cho cập nhật trạng thái pet (>= 1).';
 comment on column public.pet_caregivers.role is
