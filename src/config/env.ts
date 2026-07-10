@@ -11,9 +11,9 @@ export const clientEnvSchema = z.object({
     .string()
     .min(1, "NEXT_PUBLIC_SUPABASE_URL is required")
     .url("NEXT_PUBLIC_SUPABASE_URL must be a valid URL"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z
     .string()
-    .min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY is required"),
+    .min(1, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required"),
 })
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>
@@ -34,7 +34,7 @@ export function getClientEnv(): ClientEnv {
 
   const parsed = clientEnvSchema.safeParse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   })
 
   if (!parsed.success) {

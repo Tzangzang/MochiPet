@@ -57,7 +57,7 @@
 | Biến | Mô tả |
 |------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key (public, RLS bảo vệ) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key (public, RLS bảo vệ) |
 | `NEXT_PUBLIC_APP_ENV` | `development` / `staging` / `production` |
 | `NEXT_PUBLIC_APP_URL` | Base URL web (dùng cho link mời co-op) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public key cho Web Push |

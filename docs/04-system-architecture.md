@@ -90,7 +90,7 @@ Client tạo reminder → lưu DB (server là lịch chuẩn)
 - RLS bật cho toàn bộ bảng dữ liệu người dùng; policy theo `auth.uid()` và quan hệ caregiver.
 - Private storage + signed URL ngắn hạn cho ảnh; không public bucket ảnh đồ ăn.
 - AI key, service_role key chỉ ở Edge Function/secret, **không** trong client bundle.
-- Với Next.js: dùng Supabase server client + middleware cho session; anon key + RLS phía browser.
+- Với Next.js: dùng Supabase server client + middleware cho session; publishable key + RLS phía browser.
 - Idempotency key cho mọi giao dịch thưởng/currency; chống replay.
 - Rate limit: food scan, AI chat, invite.
 - Sanitize text người dùng; validate MIME/size; xóa EXIF.
