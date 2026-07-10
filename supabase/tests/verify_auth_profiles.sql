@@ -54,3 +54,64 @@ select grantee, privilege_type
 from information_schema.role_table_grants
 where table_schema = 'public' and table_name = 'profiles'
 order by grantee, privilege_type;
+
+
+-- =========================================================================
+-- HARDENING CHECKS (bổ sung sau migration 20260711013000)
+-- Tất cả read-only. Không INSERT/UPDATE/DELETE/TRUNCATE/DDL.
+-- =========================================================================
+
+-- 9. anon KHÔNG có bất kỳ table privilege nào trên public.profiles
+select
+  not has_table_privilege('anon', 'public.profiles', 'SELECT')
+  and not has_table_privilege('anon', 'public.profiles', 'INSERT')
+  and not has_table_privilege('anon', 'public.profiles', 'UPDATE')
+  and not has_table_privilege('anon', 'public.profiles', 'DELETE')
+  and not has_table_privilege('anon', 'public.profiles', 'TRUNCATE')
+  and not has_table_privilege('anon', 'public.profiles', 'REFERENCES')
+  and not has_table_privilege('anon', 'public.profiles', 'TRIGGER')
+  as anon_has_no_privileges;
+
+-- 10. authenticated CÓ quyền SELECT
+select has_table_privilege('authenticated', 'public.profiles', 'SELECT')
+  as authenticated_can_select;
+
+-- 11. authenticated CÓ quyền UPDATE
+select has_table_privilege('authenticated', 'public.profiles', 'UPDATE')
+  as authenticated_can_update;
+
+-- 12. authenticated KHÔNG có quyền dư thừa (INSERT/DELETE/TRUNCATE/REFERENCES/TRIGGER)
+select
+  not has_table_privilege('authenticated', 'public.profiles', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.profiles', 'DELETE')
+  and not has_table_privilege('authenticated', 'public.profiles', 'TRUNCATE')
+  and not has_table_privilege('authenticated', 'public.profiles', 'REFERENCES')
+  and not has_table_privilege('authenticated', 'public.profiles', 'TRIGGER')
+  as authenticated_has_no_excess_privileges;
+
+-- 13. anon KHÔNG có EXECUTE trực tiếp trên các trigger function
+select
+  not has_function_privilege('anon', 'public.handle_new_user()', 'EXECUTE')
+  and not has_function_privilege('anon', 'public.set_updated_at()', 'EXECUTE')
+  as anon_cannot_execute_trigger_functions;
+
+-- 14. authenticated KHÔNG có EXECUTE trực tiếp trên các trigger function
+select
+  not has_function_privilege('authenticated', 'public.handle_new_user()', 'EXECUTE')
+  and not has_function_privilege('authenticated', 'public.set_updated_at()', 'EXECUTE')
+  as authenticated_cannot_execute_trigger_functions;
+
+-- 15. postgres và service_role KHÔNG bị thay đổi ngoài ý muốn (vẫn giữ quyền)
+select
+  has_table_privilege('service_role', 'public.profiles', 'SELECT')
+  and has_table_privilege('service_role', 'public.profiles', 'INSERT')
+  and has_table_privilege('service_role', 'public.profiles', 'UPDATE')
+  and has_table_privilege('service_role', 'public.profiles', 'DELETE')
+  as service_role_still_has_privileges;
+
+select
+  has_table_privilege('postgres', 'public.profiles', 'SELECT')
+  and has_table_privilege('postgres', 'public.profiles', 'INSERT')
+  and has_table_privilege('postgres', 'public.profiles', 'UPDATE')
+  and has_table_privilege('postgres', 'public.profiles', 'DELETE')
+  as postgres_still_has_privileges;
