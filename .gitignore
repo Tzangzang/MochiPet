@@ -46,5 +46,9 @@ dist/
 *.log
 .claude/settings.local.json
 
+# Supabase CLI local cache (chứa thông tin project/kết nối, không commit)
+supabase/.temp/
+supabase/.branches/
+
 # allow committing the env template (overrides .env* above)
 !.env.example
