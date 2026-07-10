@@ -214,7 +214,19 @@ declare
   v_active_count integer;
   v_locked boolean;
 begin
-  -- Chỉ kiểm tra khi row (mới hoặc sau cập nhật) ở trạng thái active.
+  -- 0. BẤT BIẾN: membership identity (pet_id, user_id) không được đổi qua UPDATE.
+  --    Guard này chạy TRƯỚC mọi early-return để áp dụng cho cả update về inactive.
+  if tg_op = 'UPDATE'
+     and (
+       new.pet_id is distinct from old.pet_id
+       or new.user_id is distinct from old.user_id
+     ) then
+    raise exception
+      'pet_id and user_id are immutable for an existing caregiver membership'
+      using errcode = 'check_violation';
+  end if;
+
+  -- Chỉ kiểm tra giới hạn khi row (mới hoặc sau cập nhật) ở trạng thái active.
   if new.status <> 'active' then
     return new;
   end if;
@@ -232,14 +244,24 @@ begin
       using errcode = 'foreign_key_violation';
   end if;
 
-  -- 3-4. Đếm active caregiver hiện có, LOẠI TRỪ chính row đang thao tác
-  --      (theo cặp pet_id + user_id) để UPDATE không tự đếm mình.
-  select count(*)
-    into v_active_count
-  from public.pet_caregivers
-  where pet_id = new.pet_id
-    and status = 'active'
-    and not (pet_id = new.pet_id and user_id = new.user_id);
+  -- 3-4. Đếm active caregiver hiện có.
+  --      INSERT: không loại trừ row nào (row chưa tồn tại).
+  --      UPDATE: loại trừ row hiện tại theo khóa OLD (OLD.pet_id, OLD.user_id)
+  --              để không tự đếm mình (identity đã được guard là bất biến).
+  if tg_op = 'UPDATE' then
+    select count(*)
+      into v_active_count
+    from public.pet_caregivers
+    where pet_id = new.pet_id
+      and status = 'active'
+      and not (pet_id = old.pet_id and user_id = old.user_id);
+  else
+    select count(*)
+      into v_active_count
+    from public.pet_caregivers
+    where pet_id = new.pet_id
+      and status = 'active';
+  end if;
 
   -- 5. Đã có >= 2 active khác -> thêm row active này là quá giới hạn.
   if v_active_count >= 2 then
@@ -252,6 +274,9 @@ begin
   return new;
 end;
 $$;
+
+comment on function public.enforce_max_two_caregivers() is
+  'BEFORE INSERT OR UPDATE trên pet_caregivers. (a) Membership identity (pet_id, user_id) là BẤT BIẾN: không được chuyển membership sang pet hoặc user khác bằng UPDATE — muốn đổi thì phải kết thúc membership cũ (status left/removed) và tạo membership mới. (b) Khóa row public.pets bằng FOR UPDATE để tuần tự hóa và giới hạn tối đa 2 active caregiver/pet. Nhờ identity bất biến, phép loại trừ row hiện tại theo khóa OLD có ngữ nghĩa rõ ràng cho trigger concurrency.';
 
 -- Đổi trigger AFTER cũ -> BEFORE INSERT OR UPDATE.
 drop trigger if exists trg_enforce_max_two_caregivers on public.pet_caregivers;

@@ -188,3 +188,39 @@ where n.nspname = 'public';
 -- static review — migration này không tạo bất kỳ cron.schedule/pg_cron job nào.
 -- Không kiểm tra cron.job bằng SQL vì pg_cron có thể đã được bật sẵn ở project
 -- (sự tồn tại của cron.job không đồng nghĩa migration này tạo job).
+
+
+-- =========================================================================
+-- IMMUTABILITY CHECKS (bổ sung ở Phase 4 Bước 1.2)
+-- =========================================================================
+
+-- 19. Trigger vẫn là BEFORE + INSERT + UPDATE (không đổi).
+select
+  bool_or((t.tgtype & 2) <> 0) as trigger_is_before,
+  bool_or((t.tgtype & 4) <> 0) as trigger_on_insert,
+  bool_or((t.tgtype & 16) <> 0) as trigger_on_update
+from pg_trigger t
+join pg_class c on c.oid = t.tgrelid
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname = 'pet_caregivers'
+  and t.tgname = 'trg_enforce_max_two_caregivers'
+  and not t.tgisinternal;
+
+-- 20. Source function có guard bất biến: kiểm tra OLD.pet_id, OLD.user_id,
+--     IS DISTINCT FROM, và row lock FOR UPDATE vẫn còn (best-effort qua catalog).
+select
+  pg_get_functiondef(p.oid) ilike '%old.pet_id%' as checks_old_pet_id,
+  pg_get_functiondef(p.oid) ilike '%old.user_id%' as checks_old_user_id,
+  pg_get_functiondef(p.oid) ilike '%is distinct from%' as uses_is_distinct_from,
+  pg_get_functiondef(p.oid) ilike '%for update%' as has_row_lock,
+  pg_get_functiondef(p.oid) ilike '%public.pets%' as locks_public_pets
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'enforce_max_two_caregivers';
+
+-- 21. Partial unique index single active owner vẫn tồn tại (không đổi).
+select exists (
+  select 1 from pg_indexes
+  where schemaname = 'public' and indexname = 'pet_caregivers_one_active_owner'
+) as owner_partial_unique_index_intact;
