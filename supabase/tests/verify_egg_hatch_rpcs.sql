@@ -218,5 +218,66 @@ from (
         )
     ), false)
 
+  union all
+  select 'one_active_egg_partial_unique_index_exists',
+    coalesce(exists (
+      select 1 from pg_indexes
+      where schemaname = 'public' and indexname = 'eggs_one_active_per_owner'
+    ), false)
+
+  union all
+  select 'one_active_egg_index_has_correct_predicate',
+    coalesce((
+      select pg_get_indexdef(i.indexrelid) ilike '%unhatched%'
+        and pg_get_indexdef(i.indexrelid) ilike '%incubating%'
+        and pg_get_indexdef(i.indexrelid) ilike '%owner_user_id%'
+        and indisunique
+      from pg_index i
+      join pg_class c on c.oid = i.indexrelid
+      where c.relname = 'eggs_one_active_per_owner'
+    ), false)
+
+  union all
+  select 'create_egg_has_idempotency_advisory_lock',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%:create_egg:%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'create_egg'), false)
+
+  union all
+  select 'start_incubation_has_idempotency_advisory_lock',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%:start_incubation:%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'start_egg_incubation'), false)
+
+  union all
+  select 'hatch_egg_has_idempotency_advisory_lock',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%:hatch_egg:%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'hatch_egg'), false)
+
+  union all
+  select 'create_egg_rejects_mismatched_species_replay',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%a different species%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'create_egg'), false)
+
+  union all
+  select 'start_incubation_rejects_mismatched_egg_replay',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%a different egg%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'start_egg_incubation'), false)
+
+  union all
+  select 'hatch_rejects_mismatched_egg_replay',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%<> p_egg_id%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'hatch_egg'), false)
+
+  union all
+  select 'hatch_rejects_mismatched_pet_name_replay',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%<> v_name%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'hatch_egg'), false)
+
 ) as checks
 order by check_name;

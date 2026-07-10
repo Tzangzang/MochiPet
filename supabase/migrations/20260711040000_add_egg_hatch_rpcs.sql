@@ -10,6 +10,10 @@ values (
 )
 on conflict (code) do nothing;
 
+create unique index eggs_one_active_per_owner
+  on public.eggs (owner_user_id)
+  where status in ('unhatched', 'incubating');
+
 create table public.pet_core_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -69,11 +73,15 @@ begin
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(v_user::text || ':create_egg', 0));
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text || ':create_egg:' || v_key, 0));
 
   select r.* into v_req
   from public.pet_core_requests r
   where r.user_id = v_user and r.operation = 'create_egg' and r.idempotency_key = v_key;
   if found then
+    if coalesce(v_req.result ->> 'species_code', '') <> v_code then
+      raise exception 'idempotency key already used with a different species' using errcode = 'check_violation';
+    end if;
     return query
     select (v_req.result ->> 'egg_id')::uuid,
            v_req.result ->> 'species_code',
@@ -149,10 +157,15 @@ begin
     raise exception 'invalid idempotency key' using errcode = 'check_violation';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text || ':start_incubation:' || v_key, 0));
+
   select r.* into v_req
   from public.pet_core_requests r
   where r.user_id = v_user and r.operation = 'start_incubation' and r.idempotency_key = v_key;
   if found then
+    if (v_req.result ->> 'egg_id')::uuid <> p_egg_id then
+      raise exception 'idempotency key already used for a different egg' using errcode = 'check_violation';
+    end if;
     return query
     select (v_req.result ->> 'egg_id')::uuid,
            v_req.result ->> 'status',
@@ -174,6 +187,9 @@ begin
   from public.pet_core_requests r
   where r.user_id = v_user and r.operation = 'start_incubation' and r.idempotency_key = v_key;
   if found then
+    if (v_req.result ->> 'egg_id')::uuid <> p_egg_id then
+      raise exception 'idempotency key already used for a different egg' using errcode = 'check_violation';
+    end if;
     return query
     select (v_req.result ->> 'egg_id')::uuid,
            v_req.result ->> 'status',
@@ -258,10 +274,16 @@ begin
     raise exception 'invalid pet name' using errcode = 'check_violation';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text || ':hatch_egg:' || v_key, 0));
+
   select r.* into v_req
   from public.pet_core_requests r
   where r.user_id = v_user and r.operation = 'hatch_egg' and r.idempotency_key = v_key;
   if found then
+    if (v_req.result ->> 'egg_id')::uuid <> p_egg_id
+       or coalesce(v_req.result ->> 'pet_name', '') <> v_name then
+      raise exception 'idempotency key already used with different input' using errcode = 'check_violation';
+    end if;
     return query
     select (v_req.result ->> 'egg_id')::uuid,
            (v_req.result ->> 'pet_id')::uuid,
@@ -285,6 +307,10 @@ begin
   from public.pet_core_requests r
   where r.user_id = v_user and r.operation = 'hatch_egg' and r.idempotency_key = v_key;
   if found then
+    if (v_req.result ->> 'egg_id')::uuid <> p_egg_id
+       or coalesce(v_req.result ->> 'pet_name', '') <> v_name then
+      raise exception 'idempotency key already used with different input' using errcode = 'check_violation';
+    end if;
     return query
     select (v_req.result ->> 'egg_id')::uuid,
            (v_req.result ->> 'pet_id')::uuid,
