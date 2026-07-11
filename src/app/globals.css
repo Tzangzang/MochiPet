@@ -198,21 +198,21 @@
 @keyframes egg-aura-pulse {
   0%,
   100% {
-    opacity: 0.35;
+    opacity: 0.55;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.85;
     transform: scale(1.06);
   }
 }
 @keyframes egg-glow-breathe {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.6;
   }
   50% {
-    opacity: 0.78;
+    opacity: 0.95;
   }
 }
 @keyframes egg-ring-expand {
@@ -230,8 +230,12 @@
     opacity: 0;
     transform: translateY(4px) scale(0.7);
   }
-  40% {
+  20% {
     opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
   }
   100% {
     opacity: 0;
@@ -274,8 +278,8 @@
 .egg-stage-incubating .egg-motion {
   left: 20%;
   right: 20%;
-  top: 4%;
-  bottom: 30%;
+  top: 2%;
+  bottom: 32%;
   align-items: flex-end;
   z-index: 2;
   animation: egg-wobble 1.2s ease-in-out infinite;
@@ -307,7 +311,7 @@
   width: 82%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 214, 150, 0.55), rgba(255, 190, 160, 0) 68%);
+  background: radial-gradient(circle, rgba(255, 206, 128, 0.78), rgba(255, 186, 150, 0) 72%);
   animation: egg-aura-pulse 3.4s ease-in-out infinite;
 }
 .egg-glow {
@@ -317,7 +321,7 @@
   width: 52%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 236, 200, 0.7), rgba(255, 236, 200, 0) 70%);
+  background: radial-gradient(circle, rgba(255, 231, 176, 0.9), rgba(255, 231, 176, 0) 72%);
   filter: blur(2px);
   animation: egg-glow-breathe 3s ease-in-out infinite;
 }
@@ -328,7 +332,7 @@
   width: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 2px solid rgba(255, 200, 150, 0.55);
+  border: 3px solid rgba(255, 188, 138, 0.8);
   opacity: 0;
   animation: egg-ring-expand 3.6s ease-out infinite;
 }
@@ -337,10 +341,11 @@
 }
 .egg-sparkle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff3d6, rgba(255, 243, 214, 0));
+  background: radial-gradient(circle, #fff0c8, rgba(255, 240, 200, 0));
+  box-shadow: 0 0 6px rgba(255, 224, 150, 0.9);
   opacity: 0;
 }
 .egg-sparkle-1 {
@@ -380,9 +385,9 @@
 }
 .egg-basket-front {
   position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 8%;
+  left: 14%;
+  right: 14%;
+  bottom: 6%;
   z-index: 3;
   pointer-events: none;
   animation: egg-basket-breathe 4.5s ease-in-out infinite;

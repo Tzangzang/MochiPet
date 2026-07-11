@@ -37,7 +37,7 @@ export function HatchForm({ eggId }: { eggId: string }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate>
       <div className="space-y-2">
-        <Label htmlFor="pet-name">Đặt tên cho pet</Label>
+        <Label htmlFor="pet-name">Đặt tên cho người bạn sắp chào đời</Label>
         <Input
           id="pet-name"
           type="text"

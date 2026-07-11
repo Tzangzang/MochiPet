@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { usePetGesture } from "../hooks/use-pet-gesture"
+import { INITIAL_PET_LEVEL } from "../lib/constants"
 import { MochiArtwork } from "./mochi-artwork"
 import type { CurrentPet, PetVisualState } from "../types"
 
@@ -50,6 +51,7 @@ export function PetView({ pet }: { pet: CurrentPet }) {
   }
 
   const speciesName = pet.species?.display_name ?? "Mochi"
+  const petLabel = `${pet.name}, ${speciesName}, cấp ${INITIAL_PET_LEVEL}`
 
   const handlePointerEnter = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.pointerType === "mouse" && interactive) setHover(true)
@@ -63,14 +65,14 @@ export function PetView({ pet }: { pet: CurrentPet }) {
       <CardHeader>
         <CardTitle>{pet.name}</CardTitle>
         <CardDescription>
-          {speciesName} · {roleLabel(pet.caregiver_role)}
+          {speciesName} · Cấp {INITIAL_PET_LEVEL} · {roleLabel(pet.caregiver_role)}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div
           className="mx-auto flex max-w-xs touch-pan-y select-none items-center justify-center"
           role="img"
-          aria-label={`Nhân vật ${pet.name}`}
+          aria-label={petLabel}
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
           {...(interactive ? gesture : {})}

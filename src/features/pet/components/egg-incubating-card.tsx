@@ -54,10 +54,10 @@ export function EggIncubatingCard({ egg }: { egg: CurrentEgg }) {
     <Card>
       <CardHeader>
         <CardTitle>Đang ấp trứng</CardTitle>
-        <CardDescription>Starter Mochi sắp chào đời.</CardDescription>
+        <CardDescription>Một người bạn nhỏ sắp chào đời.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-center">
+      <CardContent className="space-y-3">
+        <div className="flex justify-center -mt-1">
           <EggArtwork variant="incubating" nearHatch={nearHatch} />
         </div>
         <div className="text-center" aria-live="polite">

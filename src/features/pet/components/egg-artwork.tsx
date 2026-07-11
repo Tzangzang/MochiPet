@@ -49,7 +49,7 @@ export function EggArtwork({
       <div
         className={`egg-stage egg-stage-incubating ${nearHatch ? "egg-stage-near" : ""}`}
         role="img"
-        aria-label="Trứng Starter Mochi đang được ấp trong rổ năng lượng"
+        aria-label="Trứng bí ẩn đang được ấp trong rổ năng lượng"
       >
         <div className="egg-energy" aria-hidden="true">
           <span className="egg-aura" />
@@ -79,7 +79,7 @@ export function EggArtwork({
     <div
       className="egg-stage egg-stage-unhatched"
       role="img"
-      aria-label="Trứng Starter Mochi chưa bắt đầu ấp"
+      aria-label="Trứng bí ẩn chưa bắt đầu ấp"
     >
       <div className="egg-motion">
         <EggShape />

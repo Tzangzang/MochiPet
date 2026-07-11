@@ -19,7 +19,6 @@ export function EggUnhatchedCard({ egg }: { egg: CurrentEgg }) {
   const startIncubation = useStartIncubation(egg.id)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const busy = startIncubation.isPending
-  const speciesName = egg.species?.display_name ?? "Starter Mochi"
 
   async function handleStart() {
     if (busy) return
@@ -34,18 +33,16 @@ export function EggUnhatchedCard({ egg }: { egg: CurrentEgg }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quả trứng của bạn</CardTitle>
-        <CardDescription>Sẵn sàng để bắt đầu ấp.</CardDescription>
+        <CardTitle>Trứng bí ẩn</CardTitle>
+        <CardDescription>
+          Bên trong đang có một người bạn nhỏ. Hãy bắt đầu ấp để khám phá.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-center">
           <EggArtwork variant="unhatched" />
         </div>
         <dl className="space-y-2 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Loài</dt>
-            <dd className="font-medium">{speciesName}</dd>
-          </div>
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Trạng thái</dt>
             <dd className="font-medium">Chưa bắt đầu ấp</dd>

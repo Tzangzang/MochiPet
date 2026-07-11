@@ -32,9 +32,9 @@ export function CreateEggCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bắt đầu hành trình MochiPet</CardTitle>
+        <CardTitle>Bắt đầu hành trình</CardTitle>
         <CardDescription>
-          Nhận quả trứng đầu tiên và ấp nở người bạn đồng hành của riêng bạn.
+          Một người bạn bí ẩn đang chờ bạn bên trong quả trứng.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -49,7 +49,7 @@ export function CreateEggCard() {
           disabled={busy}
           aria-busy={busy}
         >
-          {busy ? "Đang tạo trứng..." : "Tạo trứng starter"}
+          {busy ? "Đang chuẩn bị..." : "Nhận trứng bí ẩn"}
         </Button>
       </CardContent>
     </Card>
