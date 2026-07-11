@@ -16,7 +16,10 @@ import type {
   PetStatus,
 } from "../types"
 
-type RawFeedState = {
+type RawFeedRow = {
+  status: PetStatus
+  died_at: string | null
+  state_version: number | string
   hunger_state: HungerState
   server_now: string
   can_feed: boolean
@@ -24,9 +27,12 @@ type RawFeedState = {
   next_state_at: string | null
 }
 
-function toFeedState(data: unknown): PetFeedState | null {
-  const row = Array.isArray(data) ? (data[0] as RawFeedState | undefined) : (data as RawFeedState | null)
-  if (!row) return null
+function firstFeedRow(data: unknown): RawFeedRow | null {
+  const row = Array.isArray(data) ? (data[0] as RawFeedRow | undefined) : (data as RawFeedRow | null)
+  return row ?? null
+}
+
+function toFeedState(row: RawFeedRow): PetFeedState {
   return {
     hunger_state: row.hunger_state,
     server_now: row.server_now,
@@ -105,17 +111,18 @@ export function usePetCore() {
         const feedResponse = await supabase.rpc("get_pet_feed_state", {
           p_pet_id: rawPet.id,
         })
+        const feedRow = feedResponse.error ? null : firstFeedRow(feedResponse.data)
         const pet: CurrentPet = {
           id: rawPet.id,
           egg_id: rawPet.egg_id,
           name: rawPet.name,
-          status: rawPet.status,
+          status: feedRow ? feedRow.status : rawPet.status,
           last_fed_at: rawPet.last_fed_at,
-          died_at: rawPet.died_at,
-          state_version: Number(rawPet.state_version),
+          died_at: feedRow ? feedRow.died_at : rawPet.died_at,
+          state_version: feedRow ? Number(feedRow.state_version) : Number(rawPet.state_version),
           species: toSpecies(rawPet.species),
           caregiver_role: caregiver.role,
-          feed: feedResponse.error ? null : toFeedState(feedResponse.data),
+          feed: feedRow ? toFeedState(feedRow) : null,
         }
         return { viewState: "pet", pet, egg: null }
       }

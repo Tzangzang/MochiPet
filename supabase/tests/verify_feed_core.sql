@@ -47,10 +47,61 @@ from (
       where n.nspname = 'public' and p.proname = 'feed_pet'), false)
 
   union all
-  select 'get_pet_feed_state_is_security_invoker',
-    coalesce((select bool_and(not p.prosecdef) from pg_proc p
+  select 'get_pet_feed_state_is_security_definer',
+    coalesce((select bool_and(p.prosecdef) from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.proname = 'get_pet_feed_state'), false)
+
+  union all
+  select 'resolve_pet_life_function_exists',
+    coalesce((select exists (
+      select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'resolve_pet_life'
+    )), false)
+
+  union all
+  select 'resolve_pet_life_not_exposed_to_client',
+    coalesce(
+      not has_function_privilege('anon', 'public.resolve_pet_life(uuid)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.resolve_pet_life(uuid)', 'EXECUTE'),
+      false)
+
+  union all
+  select 'resolve_pet_life_is_security_definer_locked_path',
+    coalesce((select
+      p.prosecdef
+      and pg_get_functiondef(p.oid) ilike '%for update%'
+      and pg_get_functiondef(p.oid) ilike '%pet_hunger_state%'
+      and pg_get_functiondef(p.oid) ilike '%last_fed_at + interval ''120 hours''%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'resolve_pet_life'), false)
+
+  union all
+  select 'feed_pet_uses_resolve_transition',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%resolve_pet_life%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'feed_pet'), false)
+
+  union all
+  select 'get_pet_feed_state_uses_resolve_transition',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%resolve_pet_life%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'get_pet_feed_state'), false)
+
+  union all
+  select 'get_pet_feed_state_uses_auth_uid_and_lock_and_caregiver',
+    coalesce((select
+      pg_get_functiondef(p.oid) ilike '%auth.uid()%'
+      and pg_get_functiondef(p.oid) ilike '%for update%'
+      and pg_get_functiondef(p.oid) ilike '%is_active_pet_caregiver%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'get_pet_feed_state'), false)
+
+  union all
+  select 'died_at_is_last_fed_plus_120h',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%last_fed_at + interval ''120 hours''%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'resolve_pet_life'), false)
 
   union all
   select 'feed_functions_have_empty_search_path',
