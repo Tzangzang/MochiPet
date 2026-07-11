@@ -4,6 +4,22 @@ export type EggStatus = "unhatched" | "incubating" | "hatched" | "cancelled"
 
 export type PetStatus = "active" | "dead"
 
+export type HungerState =
+  | "normal"
+  | "hungry"
+  | "very_hungry"
+  | "weak"
+  | "critical"
+  | "dead"
+
+export type PetFeedState = {
+  hunger_state: HungerState
+  server_now: string
+  can_feed: boolean
+  next_feed_at: string
+  next_state_at: string | null
+}
+
 export type PetVisualState =
   | "idle"
   | "hover_happy"
@@ -40,6 +56,7 @@ export type CurrentPet = {
   state_version: number
   species: PetSpecies | null
   caregiver_role: CaregiverRole
+  feed: PetFeedState | null
 }
 
 export type PetCoreViewState =

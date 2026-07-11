@@ -9,10 +9,32 @@ import type {
   CurrentEgg,
   CurrentPet,
   EggStatus,
+  HungerState,
   PetCoreData,
+  PetFeedState,
   PetSpecies,
   PetStatus,
 } from "../types"
+
+type RawFeedState = {
+  hunger_state: HungerState
+  server_now: string
+  can_feed: boolean
+  next_feed_at: string
+  next_state_at: string | null
+}
+
+function toFeedState(data: unknown): PetFeedState | null {
+  const row = Array.isArray(data) ? (data[0] as RawFeedState | undefined) : (data as RawFeedState | null)
+  if (!row) return null
+  return {
+    hunger_state: row.hunger_state,
+    server_now: row.server_now,
+    can_feed: row.can_feed,
+    next_feed_at: row.next_feed_at,
+    next_state_at: row.next_state_at,
+  }
+}
 
 type RawSpecies = {
   code: string
@@ -80,6 +102,9 @@ export function usePetCore() {
       const caregiver = caregiverResponse.data as unknown as RawCaregiver | null
       const rawPet = caregiver ? firstOf(caregiver.pet) : null
       if (caregiver && rawPet) {
+        const feedResponse = await supabase.rpc("get_pet_feed_state", {
+          p_pet_id: rawPet.id,
+        })
         const pet: CurrentPet = {
           id: rawPet.id,
           egg_id: rawPet.egg_id,
@@ -90,6 +115,7 @@ export function usePetCore() {
           state_version: Number(rawPet.state_version),
           species: toSpecies(rawPet.species),
           caregiver_role: caregiver.role,
+          feed: feedResponse.error ? null : toFeedState(feedResponse.data),
         }
         return { viewState: "pet", pet, egg: null }
       }
