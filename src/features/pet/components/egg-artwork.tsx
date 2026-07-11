@@ -15,24 +15,19 @@ function EggShape() {
   )
 }
 
-function BasketBack() {
+function NestFront() {
   return (
-    <svg viewBox="0 0 200 100" className="egg-basket-svg" aria-hidden="true" focusable="false">
-      <path className="basket-handle" d="M40 96 Q100 4 160 96" />
-    </svg>
-  )
-}
-
-function BasketFront() {
-  return (
-    <svg viewBox="0 0 200 130" className="egg-basket-svg" aria-hidden="true" focusable="false">
-      <path className="basket-pad" d="M28 26 Q100 6 172 26 Q150 44 100 44 Q50 44 28 26 Z" />
+    <svg viewBox="0 0 220 86" className="egg-nest-svg" aria-hidden="true" focusable="false">
+      <ellipse className="nest-pad" cx="110" cy="34" rx="96" ry="30" />
       <path
-        className="basket-body"
-        d="M26 28 Q30 96 46 116 Q70 126 100 126 Q130 126 154 116 Q170 96 174 28 Q150 52 100 52 Q50 52 26 28 Z"
+        className="nest-body"
+        d="M10 38 Q12 70 42 78 Q110 90 178 78 Q208 70 210 38 Q206 54 110 60 Q14 54 10 38 Z"
       />
-      <path className="basket-rim" d="M20 26 Q100 2 180 26 Q180 44 100 52 Q20 44 20 26 Z" />
-      <path className="basket-weave" d="M46 60 Q100 74 154 60 M42 84 Q100 100 158 84" />
+      <path className="nest-rim" d="M14 34 Q110 6 206 34 Q206 52 110 58 Q14 52 14 34 Z" />
+      <path
+        className="nest-straw"
+        d="M44 40 Q72 50 100 42 M120 44 Q150 52 178 40 M74 56 Q110 64 146 56"
+      />
     </svg>
   )
 }
@@ -49,7 +44,7 @@ export function EggArtwork({
       <div
         className={`egg-stage egg-stage-incubating ${nearHatch ? "egg-stage-near" : ""}`}
         role="img"
-        aria-label="Trứng bí ẩn đang được ấp trong rổ năng lượng"
+        aria-label="Trứng bí ẩn đang được ấp trong ổ năng lượng"
       >
         <div className="egg-energy" aria-hidden="true">
           <span className="egg-aura" />
@@ -61,16 +56,13 @@ export function EggArtwork({
           <span className="egg-sparkle egg-sparkle-3" />
           <span className="egg-sparkle egg-sparkle-4" />
         </div>
-        <div className="egg-basket-back" aria-hidden="true">
-          <BasketBack />
-        </div>
         <div className="egg-motion">
           <EggShape />
         </div>
-        <div className="egg-basket-front" aria-hidden="true">
-          <BasketFront />
+        <div className="egg-nest-front" aria-hidden="true">
+          <NestFront />
         </div>
-        <div className="egg-basket-shadow" aria-hidden="true" />
+        <div className="egg-nest-shadow" aria-hidden="true" />
       </div>
     )
   }
