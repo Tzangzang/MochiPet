@@ -522,6 +522,23 @@
 .mochi-sparkle {
   animation: mochi-sparkle-pop 0.9s ease-out forwards;
 }
+@keyframes mochi-feed-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 4px) scale(0.9);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -14px) scale(1);
+  }
+}
+.mochi-feed-pop {
+  animation: mochi-feed-pop 1.5s ease-out forwards;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .egg-stage-unhatched .egg-motion,
@@ -535,7 +552,8 @@
   .mochi-happy .mochi-body,
   .mochi-scratch .mochi-body,
   .mochi-scratch .mochi-tail,
-  .mochi-sparkle {
+  .mochi-sparkle,
+  .mochi-feed-pop {
     animation: none;
   }
   .egg-stage-unhatched .egg-motion,

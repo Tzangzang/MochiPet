@@ -28,13 +28,26 @@ export function toFriendlyError(error: unknown): FriendlyError {
   if (raw.includes("not ready to hatch")) {
     return { message: "Trứng chưa đủ thời gian nở. Vui lòng thử lại sau vài giây.", keepKey: true }
   }
-  if (raw.includes("different species") || raw.includes("different egg") || raw.includes("different input")) {
+  if (raw.includes("not a caregiver")) {
+    return { message: "Bạn không có quyền chăm sóc bé này.", keepKey: false }
+  }
+  if (
+    raw.includes("different species") ||
+    raw.includes("different egg") ||
+    raw.includes("different input") ||
+    raw.includes("different pet")
+  ) {
     return { message: "Thao tác đã được dùng với thông tin khác. Vui lòng thử lại.", keepKey: false }
   }
   if (raw.includes("cannot be incubated") || raw.includes("not incubating") || raw.includes("already hatched")) {
     return { message: "Không thể thực hiện: trứng đã được xử lý.", keepKey: false }
   }
-  if (raw.includes("egg not found") || raw.includes("species not found") || raw.includes("no_data")) {
+  if (
+    raw.includes("egg not found") ||
+    raw.includes("species not found") ||
+    raw.includes("pet not found") ||
+    raw.includes("no_data")
+  ) {
     return { message: "Không tìm thấy dữ liệu phù hợp. Vui lòng tải lại trang.", keepKey: false }
   }
   if (raw.includes("invalid pet name")) {

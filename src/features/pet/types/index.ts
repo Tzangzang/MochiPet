@@ -71,6 +71,22 @@ export type PetCoreData = {
   egg: CurrentEgg | null
 }
 
+export type FeedOutcome = "fed" | "cooldown" | "dead"
+
+export type FeedPetResult = {
+  pet_id: string
+  status: PetStatus
+  hunger_state: HungerState
+  last_fed_at: string
+  died_at: string | null
+  state_version: number | string
+  server_now: string
+  can_feed: boolean
+  next_feed_at: string
+  next_state_at: string | null
+  outcome: FeedOutcome
+}
+
 export type CreateEggResult = {
   egg_id: string
   species_code: string
