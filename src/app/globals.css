@@ -182,12 +182,252 @@
   }
 }
 
-.egg {
-  transform-origin: 50% 65%;
+@keyframes egg-breathe {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  80% {
+    transform: rotate(-1.6deg) translateY(-1px);
+  }
+  90% {
+    transform: rotate(1.6deg) translateY(0);
+  }
+}
+@keyframes egg-aura-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.06);
+  }
+}
+@keyframes egg-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+@keyframes egg-ring-expand {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+@keyframes egg-sparkle-float {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.7);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(1);
+  }
+}
+@keyframes egg-basket-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+.egg-stage {
+  position: relative;
+  width: clamp(9rem, 44vw, 12rem);
+  margin-inline: auto;
+}
+.egg-stage-unhatched {
+  aspect-ratio: 4 / 5;
+}
+.egg-stage-incubating {
+  aspect-ratio: 1 / 1;
+}
+.egg-motion {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 50% 90%;
   will-change: transform;
 }
-.egg-near {
+.egg-stage-unhatched .egg-motion {
+  inset: 4% 12% 8% 12%;
+  animation: egg-breathe 5.5s ease-in-out infinite;
+}
+.egg-stage-incubating .egg-motion {
+  left: 20%;
+  right: 20%;
+  top: 4%;
+  bottom: 30%;
+  align-items: flex-end;
+  z-index: 2;
   animation: egg-wobble 1.2s ease-in-out infinite;
+}
+.egg-shape {
+  width: 100%;
+  height: 100%;
+}
+.egg-ground-shadow {
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  bottom: 2%;
+  height: 8%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0));
+}
+.egg-energy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.egg-aura {
+  position: absolute;
+  left: 9%;
+  top: 2%;
+  width: 82%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 150, 0.55), rgba(255, 190, 160, 0) 68%);
+  animation: egg-aura-pulse 3.4s ease-in-out infinite;
+}
+.egg-glow {
+  position: absolute;
+  left: 24%;
+  top: 16%;
+  width: 52%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 200, 0.7), rgba(255, 236, 200, 0) 70%);
+  filter: blur(2px);
+  animation: egg-glow-breathe 3s ease-in-out infinite;
+}
+.egg-ring {
+  position: absolute;
+  left: 20%;
+  top: 12%;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 200, 150, 0.55);
+  opacity: 0;
+  animation: egg-ring-expand 3.6s ease-out infinite;
+}
+.egg-ring-2 {
+  animation-delay: 1.8s;
+}
+.egg-sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3d6, rgba(255, 243, 214, 0));
+  opacity: 0;
+}
+.egg-sparkle-1 {
+  left: 24%;
+  top: 28%;
+  animation: egg-sparkle-float 2.8s ease-in-out infinite;
+}
+.egg-sparkle-2 {
+  left: 72%;
+  top: 24%;
+  animation: egg-sparkle-float 3.2s ease-in-out infinite 0.6s;
+}
+.egg-sparkle-3 {
+  left: 30%;
+  top: 56%;
+  animation: egg-sparkle-float 3s ease-in-out infinite 1.1s;
+}
+.egg-sparkle-4 {
+  left: 68%;
+  top: 54%;
+  animation: egg-sparkle-float 3.4s ease-in-out infinite 1.6s;
+}
+.egg-stage-near .egg-aura {
+  animation-duration: 2.2s;
+  background: radial-gradient(circle, rgba(255, 208, 130, 0.7), rgba(255, 180, 150, 0) 68%);
+}
+.egg-stage-near .egg-glow {
+  animation-duration: 1.8s;
+}
+.egg-basket-back {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 8%;
+  z-index: 1;
+  pointer-events: none;
+}
+.egg-basket-front {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 8%;
+  z-index: 3;
+  pointer-events: none;
+  animation: egg-basket-breathe 4.5s ease-in-out infinite;
+}
+.egg-basket-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.egg-basket-shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 3%;
+  height: 7%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0));
+}
+.basket-handle {
+  fill: none;
+  stroke: #e6b98a;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+.basket-pad {
+  fill: #fff3e2;
+  opacity: 0.85;
+}
+.basket-body {
+  fill: #eec98f;
+  stroke: #e0b076;
+  stroke-width: 3;
+}
+.basket-rim {
+  fill: #f6d9ac;
+  stroke: #e6b98a;
+  stroke-width: 3;
+}
+.basket-weave {
+  fill: none;
+  stroke: #e0b076;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.7;
 }
 .egg-shell {
   fill: #fff7ef;
@@ -293,7 +533,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .egg-near,
+  .egg-stage-unhatched .egg-motion,
+  .egg-stage-incubating .egg-motion,
+  .egg-aura,
+  .egg-glow,
+  .egg-ring,
+  .egg-sparkle,
+  .egg-basket-front,
   .mochi-happy .mochi-tail,
   .mochi-happy .mochi-body,
   .mochi-scratch .mochi-body,
@@ -301,8 +547,21 @@
   .mochi-sparkle {
     animation: none;
   }
+  .egg-stage-unhatched .egg-motion,
+  .egg-stage-incubating .egg-motion,
+  .egg-basket-front,
   .mochi,
   .mochi-happy {
     transform: none;
+  }
+  .egg-aura {
+    opacity: 0.45;
+  }
+  .egg-glow {
+    opacity: 0.5;
+  }
+  .egg-ring,
+  .egg-sparkle {
+    opacity: 0;
   }
 }

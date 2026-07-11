@@ -39,7 +39,7 @@ export function EggUnhatchedCard({ egg }: { egg: CurrentEgg }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-center">
-          <EggArtwork />
+          <EggArtwork variant="unhatched" />
         </div>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between gap-4">
