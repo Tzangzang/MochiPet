@@ -11,7 +11,7 @@ import { usePetCore } from "../hooks/use-pet-core"
 import { CreateEggCard } from "./create-egg-card"
 import { EggUnhatchedCard } from "./egg-unhatched-card"
 import { EggIncubatingCard } from "./egg-incubating-card"
-import { PetView } from "./pet-view"
+import { HomeRoom } from "./home-room"
 import { ErrorNotice } from "./error-notice"
 
 function StatusCard({
@@ -54,7 +54,7 @@ export function PetCorePanel() {
   }
 
   if (data.viewState === "pet" && data.pet) {
-    return <PetView pet={data.pet} />
+    return <HomeRoom pet={data.pet} />
   }
   if (data.viewState === "egg_incubating" && data.egg) {
     return <EggIncubatingCard egg={data.egg} />

@@ -540,6 +540,204 @@
   animation: mochi-feed-pop 1.5s ease-out forwards;
 }
 
+.home-room-scene {
+  --room-wall-top: #fff4ec;
+  --room-wall-bottom: #ffe7d8;
+  --room-floor: #f3d8bd;
+  --room-floor-edge: #e5c09d;
+  --room-rug: #ffdcc4;
+  --room-rug-ring: #ffc39c;
+  --room-window-frame: #f2b49a;
+  --room-window-sky-top: #d8efff;
+  --room-window-sky-bottom: #ecfaf0;
+  --room-curtain: #ffd2de;
+  --room-frame-fill-a: #ffe8c6;
+  --room-frame-fill-b: #ffcf9f;
+  --room-frame-border: #f3c19c;
+  --room-leaf: #8ed6a4;
+  --room-leaf-mid: #79c690;
+  --room-pot: #e59a74;
+  position: relative;
+  width: 100%;
+  height: clamp(15rem, 46vw, 21rem);
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: linear-gradient(to bottom, var(--room-wall-top), var(--room-wall-bottom));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: filter 300ms ease;
+}
+.dark .home-room-scene {
+  --room-wall-top: #2c2420;
+  --room-wall-bottom: #241d1a;
+  --room-floor: #3a2d24;
+  --room-floor-edge: #2c221b;
+  --room-rug: #4a382c;
+  --room-rug-ring: #5a4536;
+  --room-window-frame: #6b4a3c;
+  --room-window-sky-top: #3a536b;
+  --room-window-sky-bottom: #2e4a44;
+  --room-curtain: #6b4753;
+  --room-frame-fill-a: #4a3a2a;
+  --room-frame-fill-b: #3a2c20;
+  --room-frame-border: #6b4a38;
+  --room-leaf: #5a9a72;
+  --room-leaf-mid: #4d8a63;
+  --room-pot: #8a5a44;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.home-room-scene[data-dimmed="true"] {
+  filter: saturate(0.5) brightness(0.98);
+}
+.home-room-floor {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 32%;
+  background: linear-gradient(to bottom, var(--room-floor), var(--room-floor-edge));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+.home-room-rug {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  width: 64%;
+  height: 15%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--room-rug), var(--room-rug-ring));
+  opacity: 0.92;
+  pointer-events: none;
+}
+.home-room-window {
+  position: absolute;
+  top: 12%;
+  right: 12%;
+  width: 26%;
+  height: 34%;
+  border-radius: 0.9rem;
+  border: 6px solid var(--room-window-frame);
+  background: linear-gradient(to bottom, var(--room-window-sky-top), var(--room-window-sky-bottom));
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-room-window-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 60% at 30% 20%, rgba(255, 255, 255, 0.75), transparent);
+  animation: home-room-glow 6s ease-in-out infinite;
+}
+.home-room-window-bar {
+  position: absolute;
+  background: var(--room-window-frame);
+}
+.home-room-window-bar-v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  transform: translateX(-50%);
+}
+.home-room-window-bar-h {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+}
+.home-room-curtain {
+  position: absolute;
+  top: 9%;
+  width: 7%;
+  height: 40%;
+  background: var(--room-curtain);
+  border-radius: 0 0 1rem 1rem;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.home-room-curtain-left {
+  right: 37%;
+  transform-origin: top center;
+  animation: home-room-sway 7s ease-in-out infinite;
+}
+.home-room-curtain-right {
+  right: 9%;
+  transform-origin: top center;
+  animation: home-room-sway 7s ease-in-out infinite reverse;
+}
+.home-room-frame {
+  position: absolute;
+  top: 17%;
+  left: 12%;
+  width: 15%;
+  height: 19%;
+  border-radius: 0.5rem;
+  border: 5px solid var(--room-frame-border);
+  background: linear-gradient(135deg, var(--room-frame-fill-a), var(--room-frame-fill-b));
+  pointer-events: none;
+}
+.home-room-plant {
+  position: absolute;
+  left: 8%;
+  bottom: 20%;
+  width: 16%;
+  max-width: 5rem;
+  pointer-events: none;
+}
+.home-room-plant-svg {
+  width: 100%;
+  height: auto;
+  transform-origin: bottom center;
+  animation: home-room-leaf-sway 8s ease-in-out infinite;
+}
+.home-room-leaf {
+  fill: var(--room-leaf);
+}
+.home-room-leaf-mid {
+  fill: var(--room-leaf-mid);
+}
+.home-room-pot {
+  fill: var(--room-pot);
+}
+.home-room-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5%;
+  z-index: 5;
+}
+.home-room-pet {
+  pointer-events: auto;
+}
+@keyframes home-room-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes home-room-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes home-room-leaf-sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .egg-stage-unhatched .egg-motion,
   .egg-stage-incubating .egg-motion,
@@ -553,7 +751,11 @@
   .mochi-scratch .mochi-body,
   .mochi-scratch .mochi-tail,
   .mochi-sparkle,
-  .mochi-feed-pop {
+  .mochi-feed-pop,
+  .home-room-window-glow,
+  .home-room-curtain-left,
+  .home-room-curtain-right,
+  .home-room-plant-svg {
     animation: none;
   }
   .egg-stage-unhatched .egg-motion,
