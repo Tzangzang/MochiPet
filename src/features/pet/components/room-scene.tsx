@@ -3,12 +3,14 @@ import type { ReactNode } from "react"
 export function RoomScene({
   children,
   dimmed = false,
+  label,
 }: {
   children: ReactNode
   dimmed?: boolean
+  label: string
 }) {
   return (
-    <div className="home-room-scene" data-dimmed={dimmed ? "true" : undefined}>
+    <div className="home-room-scene" data-dimmed={dimmed ? "true" : undefined} aria-label={label}>
       <span className="home-room-frame" aria-hidden="true" />
       <div className="home-room-window" aria-hidden="true">
         <span className="home-room-window-glow" />
@@ -27,7 +29,8 @@ export function RoomScene({
           <path d="M18 46 h24 l-4 28 h-16 z" className="home-room-pot" />
         </svg>
       </div>
-      <div className="home-room-stage">{children}</div>
+      <div className="home-room-entities" aria-hidden="true" />
+      {children}
     </div>
   )
 }

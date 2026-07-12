@@ -559,7 +559,8 @@
   --room-pot: #e59a74;
   position: relative;
   width: 100%;
-  height: clamp(15rem, 46vw, 21rem);
+  --pet-size: clamp(8.5rem, 34vw, 12rem);
+  height: clamp(24rem, 82vw, 38rem);
   overflow: hidden;
   border-radius: 1.5rem;
   background: linear-gradient(to bottom, var(--room-wall-top), var(--room-wall-bottom));
@@ -599,9 +600,9 @@
 .home-room-rug {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: 5.4rem;
   width: 64%;
-  height: 15%;
+  height: 3.5rem;
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(closest-side, var(--room-rug), var(--room-rug-ring));
@@ -677,10 +678,10 @@
 }
 .home-room-plant {
   position: absolute;
-  left: 8%;
-  bottom: 20%;
-  width: 16%;
-  max-width: 5rem;
+  left: 6%;
+  bottom: 6rem;
+  width: 15%;
+  max-width: 4.5rem;
   pointer-events: none;
 }
 .home-room-plant-svg {
@@ -700,15 +701,239 @@
 }
 .home-room-stage {
   position: absolute;
-  inset: 0;
+  inset: 0 0 5.75rem 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 5%;
+  padding-bottom: 0.25rem;
   z-index: 5;
+  pointer-events: none;
 }
 .home-room-pet {
+  position: relative;
   pointer-events: auto;
+}
+.home-room-pet svg {
+  width: var(--pet-size);
+  height: auto;
+}
+.home-room-pet-pop {
+  animation: home-room-pet-pop 0.5s ease-out;
+}
+.home-room-entities {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5.75rem;
+  height: 3rem;
+  z-index: 1;
+  pointer-events: none;
+}
+.home-room-hud {
+  position: absolute;
+  top: 0.75rem;
+  z-index: 10;
+  max-width: 46%;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+.dark .home-room-hud {
+  background: rgba(24, 20, 18, 0.66);
+}
+.home-room-hud-pet {
+  left: 0.75rem;
+}
+.home-room-hud-hunger {
+  right: 0.75rem;
+  text-align: right;
+}
+.home-room-hud-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+.home-room-hud-sub {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  color: var(--muted-foreground);
+}
+.home-room-hud-meta {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
+.home-room-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.home-room-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 5rem;
+  transform: translateX(-50%);
+  z-index: 8;
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.home-room-dock {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.home-room-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.5rem;
+  padding: 0.45rem 0.35rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.dark .home-room-action {
+  background: rgba(30, 26, 23, 0.8);
+}
+.home-room-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.home-room-action:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.home-room-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.home-room-action-icon {
+  color: var(--foreground);
+  line-height: 0;
+}
+.home-room-action-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.home-room-action-badge {
+  position: absolute;
+  top: -0.45rem;
+  right: 0.3rem;
+  border-radius: 9999px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border: 1px solid var(--border);
+}
+.home-room-bubble-slot {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--pet-size) - 0.5rem);
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  width: max-content;
+  max-width: 78%;
+  pointer-events: none;
+}
+.home-room-bubble {
+  position: relative;
+  max-width: 100%;
+  padding: 0.4rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+  animation: home-room-bubble-in 0.18s ease-out;
+}
+.home-room-bubble-text {
+  display: block;
+  text-align: center;
+}
+.home-room-bubble-tail {
+  position: absolute;
+  left: 50%;
+  bottom: -0.35rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 0.15rem;
+  background-color: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+.home-room-bubble-neutral {
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+.home-room-bubble-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+.home-room-bubble-info {
+  background-color: #e0f2fe;
+  color: #075985;
+}
+.home-room-bubble-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+.dark .home-room-bubble-success {
+  background-color: #05301c;
+  color: #bbf7d0;
+}
+.dark .home-room-bubble-info {
+  background-color: #082f42;
+  color: #bae6fd;
+}
+.dark .home-room-bubble-error {
+  background-color: #3a1414;
+  color: #fecaca;
+}
+@keyframes home-room-pet-pop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(-8px) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes home-room-bubble-in {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes home-room-glow {
   0%,
@@ -755,7 +980,9 @@
   .home-room-window-glow,
   .home-room-curtain-left,
   .home-room-curtain-right,
-  .home-room-plant-svg {
+  .home-room-plant-svg,
+  .home-room-pet-pop,
+  .home-room-bubble {
     animation: none;
   }
   .egg-stage-unhatched .egg-motion,
