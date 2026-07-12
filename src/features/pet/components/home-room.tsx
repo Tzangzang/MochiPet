@@ -264,7 +264,6 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
         hungerState={hunger}
         lastFedAt={pet.last_fed_at}
         referenceIso={feed?.server_now ?? pet.last_fed_at}
-        cooldownMs={cooldownMs}
       />
       <div className="home-room-stage">
         <SpeechBubble text={bubbleText} tone={bubbleTone} />
