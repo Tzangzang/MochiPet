@@ -109,7 +109,7 @@ from (
       exists (select 1 from unnest(p.proconfig) cfg where cfg = 'search_path=' or cfg = 'search_path=""')
     ) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public'
-        and p.proname in ('feed_pet', 'get_pet_feed_state', 'pet_hunger_state', 'pet_derived_state')), false)
+        and p.proname in ('feed_pet', 'get_pet_feed_state', 'pet_hunger_state', 'pet_derived_state', 'pet_feed_cooldown')), false)
 
   union all
   select 'feed_pet_execute_granted_to_authenticated',
@@ -163,10 +163,35 @@ from (
       where n.nspname = 'public' and p.proname = 'feed_pet'), false)
 
   union all
-  select 'feed_pet_cooldown_is_5_minutes',
-    coalesce((select pg_get_functiondef(p.oid) ilike '%5 minutes%'
+  select 'pet_feed_cooldown_returns_4_hours',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%interval ''4 hours''%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'pet_feed_cooldown'), false)
+
+  union all
+  select 'feed_pet_cooldown_uses_four_hour_helper',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%pet_feed_cooldown()%'
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.proname = 'feed_pet'), false)
+
+  union all
+  select 'derived_state_cooldown_uses_four_hour_helper',
+    coalesce((select pg_get_functiondef(p.oid) ilike '%pet_feed_cooldown()%'
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'pet_derived_state'), false)
+
+  union all
+  select 'no_five_minute_cooldown_in_active_feed_functions',
+    coalesce((select bool_and(pg_get_functiondef(p.oid) not ilike '%5 minutes%')
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname in ('feed_pet', 'pet_derived_state', 'get_pet_feed_state')), false)
+
+  union all
+  select 'cooldown_migration_applied',
+    coalesce((select exists (
+      select 1 from supabase_migrations.schema_migrations
+      where version = '20260712010000'
+    )), false)
 
   union all
   select 'hunger_thresholds_are_24_48_72_96_120',

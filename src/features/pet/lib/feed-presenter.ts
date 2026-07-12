@@ -25,9 +25,13 @@ export const HUNGER_TONE: Record<HungerState, string> = {
 
 export function formatCountdown(remainingMs: number): string {
   const total = Math.max(0, Math.ceil(remainingMs / 1000))
-  const minutes = Math.floor(total / 60)
+  const hours = Math.floor(total / 3600)
+  const minutes = Math.floor((total % 3600) / 60)
   const seconds = total % 60
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+  const mm = String(minutes).padStart(2, "0")
+  const ss = String(seconds).padStart(2, "0")
+  if (hours >= 1) return `${String(hours).padStart(2, "0")}:${mm}:${ss}`
+  return `${mm}:${ss}`
 }
 
 export function formatLastFed(lastFedAt: string, referenceIso: string): string {

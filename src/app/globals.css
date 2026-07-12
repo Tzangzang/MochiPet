@@ -803,7 +803,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.2rem;
-  min-height: 3.5rem;
+  min-height: 3.75rem;
   padding: 0.45rem 0.35rem;
   border-radius: 0.9rem;
   border: 1px solid var(--border);
@@ -832,11 +832,10 @@
 }
 .home-room-action-label {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 0.72rem;
   font-weight: 500;
+  line-height: 1.15;
+  text-align: center;
 }
 .home-room-action-badge {
   position: absolute;
