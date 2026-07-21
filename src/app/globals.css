@@ -793,8 +793,8 @@
   bottom: 0.75rem;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
 }
 .home-room-action {
   position: relative;
@@ -912,6 +912,89 @@
 .dark .home-room-bubble-error {
   background-color: #3a1414;
   color: #fecaca;
+}
+.home-room-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.15rem;
+}
+.home-room-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+}
+.home-room-stat-label {
+  width: 3.4rem;
+  flex-shrink: 0;
+}
+.home-room-stat-track {
+  position: relative;
+  height: 0.4rem;
+  width: 3.4rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+.dark .home-room-stat-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.home-room-stat-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 9999px;
+}
+.home-room-stat-health {
+  background: #f2799a;
+}
+.home-room-stat-hygiene {
+  background: #6fbfd6;
+}
+.home-room-stat-value {
+  min-width: 1.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.home-room-waste-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.home-room-waste {
+  position: absolute;
+  width: clamp(1.6rem, 7vw, 2.1rem);
+  height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 0.6rem;
+}
+.home-room-waste:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.home-room-waste:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.home-room-waste-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.home-room-waste-shadow {
+  fill: rgba(0, 0, 0, 0.16);
+}
+.home-room-waste-body {
+  fill: #9c6b43;
+}
+.home-room-waste-dot {
+  fill: #7a5030;
 }
 @keyframes home-room-pet-pop {
   0% {

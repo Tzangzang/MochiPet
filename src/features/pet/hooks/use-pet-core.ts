@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { getSupabaseBrowserClient } from "@/services/supabase/client"
+import { getClientTimeZone } from "@/adapters/timezone"
 import { petCoreKeys } from "../lib/query-keys"
 import type {
   CaregiverRole,
@@ -11,34 +12,59 @@ import type {
   EggStatus,
   HungerState,
   PetCoreData,
-  PetFeedState,
+  PetLifecycle,
   PetSpecies,
   PetStatus,
+  WasteEntity,
 } from "../types"
 
-type RawFeedRow = {
+type RawRoomRow = {
   status: PetStatus
+  hunger_state: HungerState
+  last_fed_at: string
   died_at: string | null
   state_version: number | string
-  hunger_state: HungerState
   server_now: string
   can_feed: boolean
   next_feed_at: string
   next_state_at: string | null
+  game_tz: string | null
+  pending_game_tz: string | null
+  meal_count_today: number | string
+  meals_required: number | string
+  health: number | string
+  hygiene: number | string
+  is_refusing_food: boolean
+  refusing_food_days: number | string
+  sleep_debt_days: number | string
+  is_sleeping: boolean
+  current_sleep_started_at: string | null
+  sleep_seconds_today: number | string
+  required_sleep_seconds: number | string
+  waste: WasteEntity[] | null
 }
 
-function firstFeedRow(data: unknown): RawFeedRow | null {
-  const row = Array.isArray(data) ? (data[0] as RawFeedRow | undefined) : (data as RawFeedRow | null)
+function firstRoomRow(data: unknown): RawRoomRow | null {
+  const row = Array.isArray(data) ? (data[0] as RawRoomRow | undefined) : (data as RawRoomRow | null)
   return row ?? null
 }
 
-function toFeedState(row: RawFeedRow): PetFeedState {
+function toLifecycle(row: RawRoomRow): PetLifecycle {
   return {
-    hunger_state: row.hunger_state,
-    server_now: row.server_now,
-    can_feed: row.can_feed,
-    next_feed_at: row.next_feed_at,
-    next_state_at: row.next_state_at,
+    game_tz: row.game_tz,
+    pending_game_tz: row.pending_game_tz,
+    meal_count_today: Number(row.meal_count_today),
+    meals_required: Number(row.meals_required),
+    health: Number(row.health),
+    hygiene: Number(row.hygiene),
+    is_refusing_food: row.is_refusing_food,
+    refusing_food_days: Number(row.refusing_food_days),
+    sleep_debt_days: Number(row.sleep_debt_days),
+    is_sleeping: row.is_sleeping,
+    current_sleep_started_at: row.current_sleep_started_at,
+    sleep_seconds_today: Number(row.sleep_seconds_today),
+    required_sleep_seconds: Number(row.required_sleep_seconds),
+    waste: Array.isArray(row.waste) ? row.waste : [],
   }
 }
 
@@ -108,21 +134,31 @@ export function usePetCore() {
       const caregiver = caregiverResponse.data as unknown as RawCaregiver | null
       const rawPet = caregiver ? firstOf(caregiver.pet) : null
       if (caregiver && rawPet) {
-        const feedResponse = await supabase.rpc("get_pet_feed_state", {
+        const roomResponse = await supabase.rpc("get_pet_room_state", {
           p_pet_id: rawPet.id,
+          p_client_tz: getClientTimeZone(),
         })
-        const feedRow = feedResponse.error ? null : firstFeedRow(feedResponse.data)
+        const room = roomResponse.error ? null : firstRoomRow(roomResponse.data)
         const pet: CurrentPet = {
           id: rawPet.id,
           egg_id: rawPet.egg_id,
           name: rawPet.name,
-          status: feedRow ? feedRow.status : rawPet.status,
-          last_fed_at: rawPet.last_fed_at,
-          died_at: feedRow ? feedRow.died_at : rawPet.died_at,
-          state_version: feedRow ? Number(feedRow.state_version) : Number(rawPet.state_version),
+          status: room ? room.status : rawPet.status,
+          last_fed_at: room ? room.last_fed_at : rawPet.last_fed_at,
+          died_at: room ? room.died_at : rawPet.died_at,
+          state_version: room ? Number(room.state_version) : Number(rawPet.state_version),
           species: toSpecies(rawPet.species),
           caregiver_role: caregiver.role,
-          feed: feedRow ? toFeedState(feedRow) : null,
+          feed: room
+            ? {
+                hunger_state: room.hunger_state,
+                server_now: room.server_now,
+                can_feed: room.can_feed,
+                next_feed_at: room.next_feed_at,
+                next_state_at: room.next_state_at,
+              }
+            : null,
+          lifecycle: room ? toLifecycle(room) : null,
         }
         return { viewState: "pet", pet, egg: null }
       }

@@ -32,4 +32,7 @@ export const idempotencyNamespace = {
   startIncubation: (eggId: string): string => `start_incubation:${eggId}`,
   hatch: (eggId: string): string => `hatch:${eggId}`,
   feedPet: (petId: string): string => `feed_pet:${petId}`,
+  cleanWaste: (wasteId: string): string => `clean_pet_waste:${wasteId}`,
+  startSleep: (petId: string): string => `start_pet_sleep:${petId}`,
+  wakePet: (petId: string): string => `wake_pet:${petId}`,
 }
