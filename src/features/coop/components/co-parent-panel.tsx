@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { Check, Copy } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -34,8 +35,16 @@ export function CoParentPanel({ petId }: { petId: string }) {
 
   const [created, setCreated] = useState<CreateInvitationResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
+  const [copied, setCopied] = useState<"link" | "code" | null>(null)
+  const [copyError, setCopyError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<"remove" | "leave" | null>(null)
+  const copyTimer = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current)
+    }
+  }, [])
 
   const handleCreate = useCallback(() => {
     if (createMutation.isPending) return
@@ -55,9 +64,16 @@ export function CoParentPanel({ petId }: { petId: string }) {
     })
   }, [revokeMutation, petId])
 
-  const handleCopy = useCallback(async (label: string, value: string) => {
+  const handleCopy = useCallback(async (label: "link" | "code", value: string) => {
+    setCopyError(null)
     const ok = await copyText(value)
-    setCopied(ok ? label : null)
+    if (!ok) {
+      setCopyError("Không sao chép được. Vui lòng thử lại.")
+      return
+    }
+    setCopied(label)
+    if (copyTimer.current) window.clearTimeout(copyTimer.current)
+    copyTimer.current = window.setTimeout(() => setCopied(null), 1800)
   }, [])
 
   if (state.isPending || !state.data) {
@@ -147,32 +163,46 @@ export function CoParentPanel({ petId }: { petId: string }) {
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">Chia sẻ liên kết hoặc mã dưới đây. Lời mời {formatExpiry(created.expires_at)}.</p>
             <div className="space-y-2">
-              <p className="break-all rounded-lg bg-muted px-3 py-2 text-xs">{created.invite_token ? inviteLink(created.invite_token) : ""}</p>
-              <p className="rounded-lg bg-muted px-3 py-2 text-center font-mono text-lg tracking-widest">{created.invite_code}</p>
+              <div className="flex w-full min-w-0 max-w-full items-center gap-2 rounded-lg bg-muted px-3 py-2">
+                <span className="line-clamp-2 min-w-0 flex-1 break-all text-xs">
+                  {created.invite_token ? inviteLink(created.invite_token) : ""}
+                </span>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background text-foreground transition hover:bg-accent active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+                  onClick={() => created.invite_token && handleCopy("link", inviteLink(created.invite_token))}
+                  aria-label="Sao chép liên kết mời"
+                >
+                  {copied === "link" ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+                </button>
+              </div>
+              <div className="flex w-full min-w-0 max-w-full items-center gap-2 rounded-lg bg-muted px-3 py-2">
+                <span className="min-w-0 flex-1 truncate text-center font-mono text-lg tracking-widest">
+                  {created.invite_code}
+                </span>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background text-foreground transition hover:bg-accent active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+                  onClick={() => created.invite_code && handleCopy("code", created.invite_code)}
+                  aria-label="Sao chép mã mời"
+                >
+                  {copied === "code" ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+                </button>
+              </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => created.invite_token && handleCopy("link", inviteLink(created.invite_token))}
-              >
-                {copied === "link" ? "Đã sao chép" : "Sao chép liên kết"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => created.invite_code && handleCopy("code", created.invite_code)}
-              >
-                {copied === "code" ? "Đã sao chép" : "Sao chép mã"}
-              </Button>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button type="button" variant="outline" className="w-full" onClick={handleRevoke} disabled={revokeMutation.isPending}>
+            <p className="min-h-5 text-xs text-muted-foreground" aria-live="polite">
+              {copied === "link" ? "Đã sao chép liên kết" : copied === "code" ? "Đã sao chép mã" : ""}
+            </p>
+            {copyError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {copyError}
+              </p>
+            ) : null}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button type="button" variant="outline" className="w-full min-w-0" onClick={handleRevoke} disabled={revokeMutation.isPending}>
                 Hủy lời mời
               </Button>
-              <Button type="button" className="w-full" onClick={handleCreate} disabled={createMutation.isPending}>
+              <Button type="button" className="w-full min-w-0" onClick={handleCreate} disabled={createMutation.isPending}>
                 Tạo mã mới
               </Button>
             </div>
@@ -180,11 +210,11 @@ export function CoParentPanel({ petId }: { petId: string }) {
         ) : data.pending_expires_at ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">Lời mời đang hoạt động, {formatExpiry(data.pending_expires_at)}. Mã chỉ hiển thị khi vừa tạo.</p>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button type="button" variant="outline" className="w-full" onClick={handleRevoke} disabled={revokeMutation.isPending}>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button type="button" variant="outline" className="w-full min-w-0" onClick={handleRevoke} disabled={revokeMutation.isPending}>
                 Hủy lời mời
               </Button>
-              <Button type="button" className="w-full" onClick={handleCreate} disabled={createMutation.isPending}>
+              <Button type="button" className="w-full min-w-0" onClick={handleCreate} disabled={createMutation.isPending}>
                 Tạo mã mới
               </Button>
             </div>
