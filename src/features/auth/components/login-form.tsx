@@ -80,6 +80,24 @@ export function LoginForm() {
 
       <GoogleSignInButton />
 
+      <p className="text-center text-xs leading-5 text-muted-foreground">
+        Bằng việc tiếp tục, bạn đồng ý với{" "}
+        <Link
+          href="/terms"
+          className="rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Điều khoản dịch vụ
+        </Link>{" "}
+        và{" "}
+        <Link
+          href="/privacy"
+          className="rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Chính sách quyền riêng tư
+        </Link>{" "}
+        của MochiPet.
+      </p>
+
       <p className="text-center text-sm text-muted-foreground">
         Chưa có tài khoản?{" "}
         <Link href="/signup" className="underline underline-offset-4">
