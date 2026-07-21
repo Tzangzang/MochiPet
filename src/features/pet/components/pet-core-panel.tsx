@@ -13,6 +13,8 @@ import { EggUnhatchedCard } from "./egg-unhatched-card"
 import { EggIncubatingCard } from "./egg-incubating-card"
 import { HomeRoom } from "./home-room"
 import { ErrorNotice } from "./error-notice"
+import { CoParentPanel } from "@/features/coop/components/co-parent-panel"
+import { JoinByCode } from "@/features/coop/components/join-by-code"
 
 function StatusCard({
   title,
@@ -54,13 +56,47 @@ export function PetCorePanel() {
   }
 
   if (data.viewState === "pet" && data.pet) {
-    return <HomeRoom pet={data.pet} />
+    return (
+      <div className="space-y-6">
+        <HomeRoom pet={data.pet} />
+        <CoParentPanel petId={data.pet.id} />
+      </div>
+    )
   }
   if (data.viewState === "egg_incubating" && data.egg) {
-    return <EggIncubatingCard egg={data.egg} />
+    return (
+      <div className="space-y-6">
+        <EggIncubatingCard egg={data.egg} />
+        <JoinCard />
+      </div>
+    )
   }
   if (data.viewState === "egg_unhatched" && data.egg) {
-    return <EggUnhatchedCard egg={data.egg} />
+    return (
+      <div className="space-y-6">
+        <EggUnhatchedCard egg={data.egg} />
+        <JoinCard />
+      </div>
+    )
   }
-  return <CreateEggCard />
+  return (
+    <div className="space-y-6">
+      <CreateEggCard />
+      <JoinCard />
+    </div>
+  )
+}
+
+function JoinCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Nuôi cùng</CardTitle>
+        <CardDescription>Có mã mời từ chủ nuôi? Nhập để cùng chăm Mochi.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <JoinByCode />
+      </CardContent>
+    </Card>
+  )
 }

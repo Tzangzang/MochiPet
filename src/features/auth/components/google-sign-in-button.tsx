@@ -49,7 +49,7 @@ async function createNonce(): Promise<{ raw: string; hashed: string }> {
   return { raw, hashed }
 }
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ onSignedIn }: { onSignedIn?: () => void } = {}) {
   const router = useRouter()
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -81,6 +81,12 @@ export function GoogleSignInButton() {
           setProcessing(false)
           return
         }
+        if (onSignedIn) {
+          processingRef.current = false
+          setProcessing(false)
+          onSignedIn()
+          return
+        }
         router.replace("/dashboard")
         router.refresh()
       } catch {
@@ -89,7 +95,7 @@ export function GoogleSignInButton() {
         setProcessing(false)
       }
     },
-    [router],
+    [router, onSignedIn],
   )
 
   useEffect(() => {
