@@ -42,6 +42,12 @@ type RawRoomRow = {
   sleep_seconds_today: number | string
   required_sleep_seconds: number | string
   waste: WasteEntity[] | null
+  variant_id: string | null
+  variant_code: string | null
+  variant_display_name: string | null
+  variant_image_path: string | null
+  variant_rarity: string | null
+  variant_rarity_label: string | null
 }
 
 function firstRoomRow(data: unknown): RawRoomRow | null {
@@ -159,6 +165,17 @@ export function usePetCore() {
               }
             : null,
           lifecycle: room ? toLifecycle(room) : null,
+          variant:
+            room && room.variant_id && room.variant_code && room.variant_image_path
+              ? {
+                  id: room.variant_id,
+                  code: room.variant_code,
+                  display_name: room.variant_display_name ?? room.variant_code,
+                  image_path: room.variant_image_path,
+                  rarity: room.variant_rarity ?? "",
+                  rarity_label: room.variant_rarity_label ?? "",
+                }
+              : null,
         }
         return { viewState: "pet", pet, egg: null }
       }

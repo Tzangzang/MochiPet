@@ -7,18 +7,29 @@ import { MochiArtwork } from "./mochi-artwork"
 import { getPetArtwork } from "../lib/pet-artwork"
 import type { PetVisualState } from "../types"
 
+const CATALOG_PREFIX = "/pets/catalog/"
+
 export function PetArtworkRenderer({
   petId,
+  variantImagePath,
   state,
 }: {
   petId: string | null
+  variantImagePath: string | null
   state: PetVisualState
 }) {
-  const artwork = getPetArtwork(petId)
-  const [failedSrc, setFailedSrc] = useState<string | null>(null)
-  const failed = artwork !== null && failedSrc === artwork.src
+  const [failed, setFailed] = useState<ReadonlySet<string>>(new Set())
 
-  if (!artwork || failed) {
+  const candidates: string[] = []
+  if (variantImagePath && variantImagePath.startsWith(CATALOG_PREFIX)) {
+    candidates.push(variantImagePath)
+  }
+  const deterministic = getPetArtwork(petId)
+  if (deterministic) candidates.push(deterministic.src)
+
+  const active = candidates.find((src) => !failed.has(src)) ?? null
+
+  if (!active) {
     return <MochiArtwork state={state} />
   }
 
@@ -30,12 +41,13 @@ export function PetArtworkRenderer({
   return (
     <div className={className}>
       <Image
-        src={artwork.src}
+        key={active}
+        src={active}
         alt=""
         fill
         sizes="(max-width: 640px) 220px, 280px"
         draggable={false}
-        onError={() => setFailedSrc(artwork.src)}
+        onError={() => setFailed((prev) => new Set(prev).add(active))}
         className="select-none object-contain"
       />
     </div>

@@ -360,7 +360,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
           aria-label={petLabel}
           {...interactionProps}
         >
-          <PetArtworkRenderer petId={pet.id} state={visual} />
+          <PetArtworkRenderer petId={pet.id} variantImagePath={pet.variant?.image_path ?? null} state={visual} />
         </div>
       </div>
       {canInteract ? (

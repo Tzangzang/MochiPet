@@ -69,6 +69,15 @@ export type PetLifecycle = {
   waste: WasteEntity[]
 }
 
+export type PetVariant = {
+  id: string
+  code: string
+  display_name: string
+  image_path: string
+  rarity: string
+  rarity_label: string
+}
+
 export type CurrentPet = {
   id: string
   egg_id: string | null
@@ -81,6 +90,7 @@ export type CurrentPet = {
   caregiver_role: CaregiverRole
   feed: PetFeedState | null
   lifecycle: PetLifecycle | null
+  variant: PetVariant | null
 }
 
 export type PetCoreViewState =
