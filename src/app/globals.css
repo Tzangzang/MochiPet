@@ -717,6 +717,15 @@
   width: var(--pet-size);
   height: auto;
 }
+.home-room-pet-artwork {
+  position: relative;
+  width: var(--pet-size);
+  height: var(--pet-size);
+}
+.home-room-artwork-dead {
+  filter: grayscale(0.9) brightness(0.94);
+  opacity: 0.85;
+}
 .home-room-pet-pop {
   animation: home-room-pet-pop 0.5s ease-out;
 }

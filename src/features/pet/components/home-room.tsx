@@ -12,7 +12,7 @@ import { INITIAL_PET_LEVEL } from "../lib/constants"
 import { formatCountdown } from "../lib/feed-presenter"
 import { SPEECH, LIFECYCLE_SPEECH, hungerRequestText } from "../lib/home-room-presenter"
 import type { BubbleTone } from "../lib/home-room-presenter"
-import { MochiArtwork } from "./mochi-artwork"
+import { PetArtworkRenderer } from "./pet-artwork-renderer"
 import { RoomScene } from "./room-scene"
 import { PetHud } from "./pet-hud"
 import { HungerHud } from "./hunger-hud"
@@ -360,7 +360,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
           aria-label={petLabel}
           {...interactionProps}
         >
-          <MochiArtwork state={visual} />
+          <PetArtworkRenderer petId={pet.id} state={visual} />
         </div>
       </div>
       {canInteract ? (
