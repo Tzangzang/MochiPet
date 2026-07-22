@@ -12,7 +12,9 @@ import { INITIAL_PET_LEVEL } from "../lib/constants"
 import { formatCountdown } from "../lib/feed-presenter"
 import { SPEECH, LIFECYCLE_SPEECH, hungerRequestText } from "../lib/home-room-presenter"
 import type { BubbleTone } from "../lib/home-room-presenter"
-import { PetArtworkRenderer } from "./pet-artwork-renderer"
+import { PetAnimatedStage } from "./pet-animated-stage"
+import { resolvePetAnimationState } from "../animation/pet-animation-config"
+import { getPetMotionProfile } from "../animation/pet-motion-profiles"
 import { RoomScene } from "./room-scene"
 import { PetHud } from "./pet-hud"
 import { HungerHud } from "./hunger-hud"
@@ -105,6 +107,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
   const [tap, setTap] = useState(false)
   const [petted, setPetted] = useState(false)
   const [feedHappy, setFeedHappy] = useState(false)
+  const [animSeq, setAnimSeq] = useState(0)
   const [bubble, setBubble] = useState<{ text: string; tone: BubbleTone } | null>(null)
   const [cleaningId, setCleaningId] = useState<string | null>(null)
 
@@ -135,6 +138,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
     if (!canInteract) return
     didScratchRef.current = true
     setScratch(true)
+    setAnimSeq((n) => n + 1)
     if (scratchTimer.current) window.clearTimeout(scratchTimer.current)
     scratchTimer.current = window.setTimeout(() => setScratch(false), SCRATCH_MS)
     showBubble(SPEECH.scratch, "neutral")
@@ -143,6 +147,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
   const handleTap = useCallback(() => {
     if (!canInteract || didScratchRef.current) return
     setTap(true)
+    setAnimSeq((n) => n + 1)
     if (tapTimer.current) window.clearTimeout(tapTimer.current)
     tapTimer.current = window.setTimeout(() => setTap(false), TAP_MS)
     showBubble(SPEECH.tap, "neutral")
@@ -151,6 +156,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
   const handlePet = useCallback(() => {
     if (!canInteract) return
     setPetted(true)
+    setAnimSeq((n) => n + 1)
     if (petTimer.current) window.clearTimeout(petTimer.current)
     petTimer.current = window.setTimeout(() => setPetted(false), PET_MS)
     showBubble(SPEECH.petting, "neutral")
@@ -158,6 +164,7 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
 
   const triggerFeedHappy = useCallback(() => {
     setFeedHappy(true)
+    setAnimSeq((n) => n + 1)
     if (feedTimer.current) window.clearTimeout(feedTimer.current)
     feedTimer.current = window.setTimeout(() => setFeedHappy(false), FEED_MS)
   }, [])
@@ -253,7 +260,18 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
   const feedPending = mutation.isPending
   const hunger: HungerState = feed?.hunger_state ?? "normal"
   const visual = resolveVisual({ isDead, isSleeping, hunger, feedPending, feedHappy, scratch, petted, tap, hover })
-  const pop = canInteract && (tap || petted || feedHappy)
+  const animState = resolvePetAnimationState({
+    isDead,
+    isSleeping,
+    feeding: feedHappy,
+    loved: false,
+    scratch: canInteract && scratch,
+    petting: canInteract && petted,
+    happy: canInteract && tap,
+    weak: hunger === "weak" || hunger === "critical",
+    hungry: hunger === "hungry" || hunger === "very_hungry",
+  })
+  const motionProfile = getPetMotionProfile(pet.variant?.code ?? null)
 
   const speciesName = pet.species?.display_name ?? "Mochi"
   const petLabel = `${pet.name}, ${speciesName}, cấp ${INITIAL_PET_LEVEL}`
@@ -355,12 +373,19 @@ export function HomeRoom({ pet }: { pet: CurrentPet }) {
       <div className="home-room-stage">
         <SpeechBubble text={bubbleText} tone={bubbleTone} />
         <div
-          className={pop ? "home-room-pet home-room-pet-pop" : "home-room-pet"}
+          className="home-room-pet"
           role="img"
           aria-label={petLabel}
           {...interactionProps}
         >
-          <PetArtworkRenderer petId={pet.id} variantImagePath={pet.variant?.image_path ?? null} state={visual} />
+          <PetAnimatedStage
+            petId={pet.id}
+            variantImagePath={pet.variant?.image_path ?? null}
+            visual={visual}
+            state={animState}
+            sequence={animSeq}
+            profile={motionProfile}
+          />
         </div>
       </div>
       {canInteract ? (

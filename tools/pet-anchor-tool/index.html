@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MochiPet Anchor Tool</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: system-ui, sans-serif; background: #1b1b1f; color: #f2f2f5; display: flex; min-height: 100vh; }
+      #sidebar { width: 320px; padding: 16px; background: #232329; overflow-y: auto; height: 100vh; }
+      #main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 16px; }
+      h1 { font-size: 16px; margin: 0 0 12px; }
+      .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+      button { background: #3a3a44; color: #f2f2f5; border: 1px solid #4a4a55; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+      button.active { background: #6d6df0; border-color: #8a8af5; }
+      select, input[type="number"] { background: #2c2c34; color: #f2f2f5; border: 1px solid #4a4a55; border-radius: 6px; padding: 5px 8px; font-size: 13px; }
+      #stageWrap { position: relative; width: 512px; height: 512px; background:
+        repeating-conic-gradient(#2a2a30 0% 25%, #26262c 0% 50%) 50% / 32px 32px; border: 1px solid #4a4a55; border-radius: 8px; }
+      #artwork { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+      .marker { position: absolute; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%); border: 2px solid #fff; pointer-events: none; font-size: 9px; }
+      .marker span { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); white-space: nowrap; text-shadow: 0 0 3px #000; }
+      textarea { width: 100%; height: 200px; background: #17171b; color: #b8f5c0; border: 1px solid #4a4a55; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 11px; padding: 8px; }
+      .anchor-btn { min-width: 92px; }
+      .hint { font-size: 11px; color: #a0a0aa; margin: 4px 0 10px; }
+      label { font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar">
+      <h1>Anchor Tool</h1>
+      <div class="row">
+        <button id="prev">Prev</button>
+        <select id="petSelect"></select>
+        <button id="next">Next</button>
+      </div>
+      <div class="row">
+        <label>motionStyle</label>
+        <select id="motionStyle">
+          <option>quadruped</option>
+          <option>biped</option>
+          <option>floating</option>
+          <option>aquatic</option>
+          <option>winged</option>
+          <option>plant</option>
+          <option>round</option>
+        </select>
+      </div>
+      <p class="hint">Pick an anchor, then click the artwork to place it. Coordinates are normalized 0-1.</p>
+      <div class="row" id="anchorButtons"></div>
+      <div class="row">
+        <label>face width</label>
+        <input id="faceWidth" type="number" step="0.01" min="0" max="1" value="0.34" />
+      </div>
+      <div class="row">
+        <label>face rotation</label>
+        <input id="faceRotation" type="number" step="1" value="0" />
+      </div>
+      <div class="row">
+        <label>tail dir</label>
+        <select id="tailDirection">
+          <option>left</option>
+          <option>right</option>
+          <option>up</option>
+          <option>down</option>
+        </select>
+      </div>
+      <div class="row">
+        <button id="clearAnchor">Clear selected anchor</button>
+      </div>
+      <div class="row">
+        <button id="exportBtn">Export TS entry</button>
+        <button id="copyBtn">Copy</button>
+      </div>
+      <textarea id="output" readonly></textarea>
+    </div>
+    <div id="main">
+      <div id="stageWrap">
+        <img id="artwork" alt="pet" draggable="false" />
+        <div id="markers"></div>
+      </div>
+      <div id="petName"></div>
+    </div>
+    <script>
+      const CATALOG = [
+        "01_cat","02_dog","03_rabbit","04_hamster","05_guinea_pig","06_ferret",
+        "07_red_panda","08_fox","09_raccoon","10_hedgehog","11_squirrel","12_capybara",
+        "13_panda","14_koala","15_sloth","16_alpaca","17_otter","18_penguin",
+        "19_axolotl","20_seal","21_sea_turtle","22_pufferfish","23_octopus","24_dolphin",
+        "25_baby_dragon","26_unicorn","27_phoenix","28_cloud_spirit","29_moon_spirit","30_sprout_spirit"
+      ];
+      const ANCHORS = ["head","belly","feet","face","frontLeft","frontRight","backLeft","backRight","tail"];
+      const state = {};
+      let index = 0;
+      let selected = "head";
+
+      const petSelect = document.getElementById("petSelect");
+      CATALOG.forEach((c, i) => {
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = c;
+        petSelect.appendChild(o);
+      });
+
+      const anchorButtons = document.getElementById("anchorButtons");
+      ANCHORS.forEach((a) => {
+        const b = document.createElement("button");
+        b.textContent = a;
+        b.className = "anchor-btn";
+        b.dataset.anchor = a;
+        b.addEventListener("click", () => { selected = a; renderButtons(); });
+        anchorButtons.appendChild(b);
+      });
+
+      function petState() {
+        const code = CATALOG[index];
+        if (!state[code]) {
+          state[code] = { motionStyle: "quadruped", points: {}, faceWidth: 0.34, faceRotation: 0, tailDirection: "right" };
+        }
+        return state[code];
+      }
+
+      function renderButtons() {
+        [...anchorButtons.children].forEach((b) => {
+          b.classList.toggle("active", b.dataset.anchor === selected);
+        });
+      }
+
+      function renderMarkers() {
+        const s = petState();
+        const markers = document.getElementById("markers");
+        markers.innerHTML = "";
+        for (const [name, p] of Object.entries(s.points)) {
+          const m = document.createElement("div");
+          m.className = "marker";
+          m.style.left = (p.x * 100) + "%";
+          m.style.top = (p.y * 100) + "%";
+          m.style.background = name === selected ? "#6d6df0" : "rgba(240,80,120,0.8)";
+          const label = document.createElement("span");
+          label.textContent = name;
+          m.appendChild(label);
+          markers.appendChild(m);
+        }
+      }
+
+      function load() {
+        const code = CATALOG[index];
+        document.getElementById("artwork").src = "../../public/pets/catalog/" + code + ".webp";
+        document.getElementById("petName").textContent = code;
+        petSelect.value = String(index);
+        const s = petState();
+        document.getElementById("motionStyle").value = s.motionStyle;
+        document.getElementById("faceWidth").value = s.faceWidth;
+        document.getElementById("faceRotation").value = s.faceRotation;
+        document.getElementById("tailDirection").value = s.tailDirection;
+        renderButtons();
+        renderMarkers();
+      }
+
+      document.getElementById("stageWrap").addEventListener("click", (e) => {
+        if (e.target.closest(".marker")) return;
+        const rect = document.getElementById("stageWrap").getBoundingClientRect();
+        const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        const y = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+        petState().points[selected] = { x: Number(x.toFixed(3)), y: Number(y.toFixed(3)) };
+        renderMarkers();
+      });
+
+      document.getElementById("prev").addEventListener("click", () => { index = (index + CATALOG.length - 1) % CATALOG.length; load(); });
+      document.getElementById("next").addEventListener("click", () => { index = (index + 1) % CATALOG.length; load(); });
+      petSelect.addEventListener("change", () => { index = Number(petSelect.value); load(); });
+      document.getElementById("motionStyle").addEventListener("change", (e) => { petState().motionStyle = e.target.value; });
+      document.getElementById("faceWidth").addEventListener("input", (e) => { petState().faceWidth = Number(e.target.value); });
+      document.getElementById("faceRotation").addEventListener("input", (e) => { petState().faceRotation = Number(e.target.value); });
+      document.getElementById("tailDirection").addEventListener("change", (e) => { petState().tailDirection = e.target.value; });
+      document.getElementById("clearAnchor").addEventListener("click", () => { delete petState().points[selected]; renderMarkers(); });
+
+      function pt(p) { return p ? "{ x: " + p.x + ", y: " + p.y + " }" : "null"; }
+      function exportEntry() {
+        const code = CATALOG[index];
+        const s = petState();
+        const p = s.points;
+        const face = p.face ? "{ center: " + pt(p.face) + ", width: " + s.faceWidth + ", rotation: " + s.faceRotation + " }" : "null";
+        const tail = p.tail ? "{ base: " + pt(p.tail) + ', direction: "' + s.tailDirection + '", length: 0.2, rotation: 0 }' : "null";
+        const lines = [
+          "// " + code,
+          "{",
+          '  code: "' + code + '",',
+          '  motionStyle: "' + s.motionStyle + '",',
+          "  head: " + pt(p.head) + ",",
+          "  belly: " + pt(p.belly) + ",",
+          "  feet: " + pt(p.feet) + ",",
+          "  face: " + face + ",",
+          "  frontLeft: " + pt(p.frontLeft) + ",",
+          "  frontRight: " + pt(p.frontRight) + ",",
+          "  backLeft: " + pt(p.backLeft) + ",",
+          "  backRight: " + pt(p.backRight) + ",",
+          "  tail: " + tail + ",",
+          "}"
+        ];
+        document.getElementById("output").value = lines.join("\n");
+      }
+      document.getElementById("exportBtn").addEventListener("click", exportEntry);
+      document.getElementById("copyBtn").addEventListener("click", () => {
+        exportEntry();
+        navigator.clipboard.writeText(document.getElementById("output").value);
+      });
+
+      load();
+    </script>
+  </body>
+</html>
