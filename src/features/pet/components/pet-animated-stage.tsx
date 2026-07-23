@@ -1,9 +1,12 @@
-import type { CSSProperties } from "react"
+"use client"
+
+import { useCallback, useState, type CSSProperties } from "react"
 import { PET_ANIMATION_CONFIG, anchorToOrigin } from "../animation/pet-animation-config"
 import type { PetAnimationState, PetMotionProfile } from "../animation/types"
 import type { PetVisualState } from "../types"
 import { PetArtworkRenderer } from "./pet-artwork-renderer"
 import { PetEyeExpression } from "./pet-eye-expression"
+import { PetFaceExpression } from "./pet-face-expression"
 import { PetFx } from "./pet-fx"
 import { PetShadow } from "./pet-shadow"
 
@@ -22,9 +25,20 @@ export function PetAnimatedStage({
   sequence: number
   profile: PetMotionProfile | null
 }) {
+  const artworkKey = `${petId}|${variantImagePath ?? ""}`
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  const [trackedKey, setTrackedKey] = useState(artworkKey)
+  if (artworkKey !== trackedKey) {
+    setTrackedKey(artworkKey)
+    setLoadedKey(null)
+  }
+  const loaded = loadedKey === artworkKey
+  const handleReady = useCallback(() => setLoadedKey(artworkKey), [artworkKey])
+
   const config = PET_ANIMATION_CONFIG[state]
   const origin = profile ? anchorToOrigin(profile, config.transformOriginAnchor) : "50% 55%"
   const motionStyle = profile?.motionStyle ?? "quadruped"
+  const overlaysActive = !!profile && loaded
 
   const bodyStyle: CSSProperties = {
     transformOrigin: origin,
@@ -39,15 +53,27 @@ export function PetAnimatedStage({
       </div>
       <div
         key={sequence}
-        className={`pet-body pet-anim-${state} pet-motion-${motionStyle}`}
+        className={`pet-body pet-animated-body-group pet-anim-${state} pet-motion-${motionStyle}`}
+        data-animation-state={state}
+        data-animation-sequence={sequence}
         style={bodyStyle}
       >
-        <PetArtworkRenderer petId={petId} variantImagePath={variantImagePath} state={visual} />
+        <PetArtworkRenderer
+          petId={petId}
+          variantImagePath={variantImagePath}
+          state={visual}
+          onReady={handleReady}
+        />
         <PetEyeExpression
           face={profile?.face ?? null}
           expression={config.eyeExpression}
           supportsBlink={profile?.supportsBlink ?? false}
-          active={!!profile}
+          active={overlaysActive}
+        />
+        <PetFaceExpression
+          face={profile?.face ?? null}
+          expression={config.eyeExpression}
+          active={overlaysActive}
         />
         <div className="pet-effects-front" aria-hidden="true">
           {profile ? <PetFx layer="front" config={config} profile={profile} /> : null}

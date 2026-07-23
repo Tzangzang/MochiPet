@@ -45,6 +45,10 @@ export type PetFaceAnchor = {
   center: PetAnchorPoint
   width: number
   rotation: number
+  eyeLeft: PetAnchorPoint
+  eyeRight: PetAnchorPoint
+  cheekLeft: PetAnchorPoint | null
+  cheekRight: PetAnchorPoint | null
 }
 
 export type PetTailAnchor = {

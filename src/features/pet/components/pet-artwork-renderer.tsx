@@ -13,10 +13,12 @@ export function PetArtworkRenderer({
   petId,
   variantImagePath,
   state,
+  onReady,
 }: {
   petId: string | null
   variantImagePath: string | null
   state: PetVisualState
+  onReady?: () => void
 }) {
   const [failed, setFailed] = useState<ReadonlySet<string>>(new Set())
 
@@ -47,6 +49,7 @@ export function PetArtworkRenderer({
         fill
         sizes="(max-width: 640px) 220px, 280px"
         draggable={false}
+        onLoad={onReady}
         onError={() => setFailed((prev) => new Set(prev).add(active))}
         className="select-none object-contain"
       />
